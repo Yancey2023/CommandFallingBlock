@@ -37,7 +37,7 @@ public class NetworkHandler {
         });
     }
 
-    public static void summonFallingBlock(EntityBetterFallingBlock entityBetterFallingBlock, ServerPlayerEntity player){
+    public static void summonFallingBlock(EntityBetterFallingBlock entityBetterFallingBlock, ServerPlayerEntity player) {
         PacketByteBuf packetByteBuf = PacketByteBufs.create();
         new PacketSummonFallingBlock(entityBetterFallingBlock).write(packetByteBuf);
         ServerPlayNetworking.send(player, ID_SUMMON_FALLING_BLOCK, packetByteBuf);

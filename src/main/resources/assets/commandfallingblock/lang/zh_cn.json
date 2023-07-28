@@ -1,2 +1,4 @@
-entity.setblockplus.better_falling_block_type=掉落方块
-command.fallingblock.failToCalculate=计算失败,这个掉落方块不可能存在
+{
+  "entity.setblockplus.better_falling_block_type" :  "掉落方块",
+  "command.fallingblock.failToCalculate" :  "计算失败,掉落方块不可能运动到目标位置"
+}

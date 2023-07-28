@@ -14,9 +14,9 @@ import net.minecraft.world.World;
 
 public class DataBlock {
 
-    public static RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
+    public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
     public BlockState blockState;
-    public NbtCompound nbtCompound;
+    public final NbtCompound nbtCompound;
 
     public DataBlock(BlockState blockState, NbtCompound nbtCompound) {
         this.blockState = blockState;

@@ -18,7 +18,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
-@Environment(value= EnvType.CLIENT)
+@Environment(value = EnvType.CLIENT)
 public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFallingBlock> {
 
     private final BlockRenderManager blockRenderManager;
@@ -28,7 +28,7 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
         this.shadowRadius = 0.5f;
         this.blockRenderManager = context.getBlockRenderManager();
     }
-    
+
     @Override
     public void render(EntityBetterFallingBlock entityBetterFallingBlock, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
         BlockState blockState = entityBetterFallingBlock.getBlockState();
