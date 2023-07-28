@@ -27,9 +27,4 @@ public abstract class EntityTrackerEntryMixin {
         }
     }
 
-//    @Inject(method = "stopTracking", at = @At("TAIL"))
-//    private void onStopTracking(ServerPlayerEntity player, CallbackInfo ci) {
-//        EntityTrackingEvents.STOP_TRACKING.invoker().onStopTracking(this.entity, player);
-//    }
-
 }

@@ -1,2 +1,4 @@
-entity.setblockplus.better_falling_block_type=falling_block
-command.fallingblock.failToCalculate=fail to calculate,the falling block doesn't exist
+{
+  "entity.setblockplus.better_falling_block_type" :  "falling_block",
+  "command.fallingblock.failToCalculate" :  "fail to calculate,the falling block doesn't exist"
+}

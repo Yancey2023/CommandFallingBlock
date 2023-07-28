@@ -2,25 +2,31 @@
   "schemaVersion": 1,
   "id": "commandfallingblock",
   "version": "${version}",
-
   "name": "CommandFallingBlock",
-  "description": "",
-  "authors": [],
-  "contact": {},
-
+  "description": "A useful mod to summon falling block",
+  "authors": [
+    "Yancey"
+  ],
+  "contact": {
+    "repo": "https://github.com/Yancey666/CommandFallingBlock"
+  },
   "license": "GPL-3.0",
   "icon": "assets/commandfallingblock/icon.png",
-
   "environment": "*",
-  "entrypoints": {},
-
-      "mixins": [
-        "commandfallingblock.mixins.json"
-      ],
-
+  "entrypoints": {
+    "client": [
+      "yancey.commandfallingblock.client.CommandFallingBlockClient"
+    ],
+    "main": [
+      "yancey.commandfallingblock.CommandFallingBlock"
+    ]
+  },
+  "mixins": [
+    "commandfallingblock.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=${loader_version}",
-        "fabric": "*",
+    "fabric": "*",
     "minecraft": "${minecraft_version}"
   }
 }

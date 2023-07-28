@@ -32,11 +32,13 @@ import yancey.commandfallingblock.network.PacketSummonFallingBlock;
 import java.util.function.Predicate;
 
 public class EntityBetterFallingBlock extends Entity {
+
     public static final EntityType<EntityBetterFallingBlock> BETTER_FALLING_BLOCK = Registry.register(
             Registries.ENTITY_TYPE,
             new Identifier(CommandFallingBlock.MOD_ID, "better_falling_block"),
-            FabricEntityTypeBuilder.create(SpawnGroup.MISC, (EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new).dimensions(EntityDimensions.fixed(0.98f, 0.98f)).trackRangeBlocks(10).trackedUpdateRate(20).build()
+            FabricEntityTypeBuilder.create(SpawnGroup.MISC, (EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new).dimensions(EntityDimensions.fixed(0.98f, 0.98f)).trackRangeChunks(10).trackedUpdateRate(20).build()
     );
+
     public DataBlock dataBlock;
     public boolean dropItem = true;
     private boolean cancelDrop;
@@ -51,15 +53,15 @@ public class EntityBetterFallingBlock extends Entity {
         dataBlock = new DataBlock(Blocks.SAND.getDefaultState(), null);
     }
 
-    private EntityBetterFallingBlock(World world, double x, double y, double z, double motionX, double motionY, double motionZ, DataBlock dataBlock, int timeFalling) {
+    private EntityBetterFallingBlock(World world, Vec3d pos, Vec3d motion, DataBlock dataBlock, int timeFalling) {
         super(BETTER_FALLING_BLOCK, world);
         this.dataBlock = dataBlock;
         intersectionChecked = true;
-        setPos(x, y, z);
-        setVelocity(motionX, motionY, motionZ);
-        prevX = x;
-        prevY = y;
-        prevZ = z;
+        setPos(pos.x, pos.y, pos.z);
+        setVelocity(motion);
+        prevX = pos.x;
+        prevY = pos.y;
+        prevZ = pos.z;
         setFallingBlockPos(getBlockPos());
         this.timeFalling = timeFalling;
         if (timeFalling >= 0) {
@@ -68,13 +70,13 @@ public class EntityBetterFallingBlock extends Entity {
         }
     }
 
-    public static EntityBetterFallingBlock fall(World world, double x, double y, double z, double motionX, double motionY, double motionZ, DataBlock dataBlock, int time) {
+    public static EntityBetterFallingBlock fall(World world, Vec3d pos, Vec3d motion, DataBlock dataBlock, int time) {
         DataBlock dataBlock1 = dataBlock;
         if (dataBlock1.blockState.contains(Properties.WATERLOGGED)) {
             dataBlock1 = new DataBlock(dataBlock.blockState.with(Properties.WATERLOGGED, false), dataBlock.nbtCompound);
         }
-        EntityBetterFallingBlock entityBetterFallingBlock = new EntityBetterFallingBlock(world, x, y, z, motionX, motionY, motionZ, dataBlock1, time);
-        world.setBlockState(BlockPos.ofFloored(x, y, z), dataBlock.blockState.getFluidState().getBlockState(), Block.NOTIFY_ALL);
+        EntityBetterFallingBlock entityBetterFallingBlock = new EntityBetterFallingBlock(world, pos, motion, dataBlock1, time);
+        world.setBlockState(BlockPos.ofFloored(pos), dataBlock.blockState.getFluidState().getBlockState(), Block.NOTIFY_ALL);
         world.spawnEntity(entityBetterFallingBlock);
         return entityBetterFallingBlock;
     }
@@ -207,7 +209,7 @@ public class EntityBetterFallingBlock extends Entity {
         if (nbtCompound.contains("DropItem", 99)) {
             dropItem = nbtCompound.getBoolean("DropItem");
         }
-        this.cancelDrop = nbtCompound.getBoolean("CancelDrop");
+        cancelDrop = nbtCompound.getBoolean("CancelDrop");
     }
 
     @Override
@@ -248,7 +250,7 @@ public class EntityBetterFallingBlock extends Entity {
         timeFalling = packet.timeFalling;
         intersectionChecked = true;
         setFallingBlockPos(getBlockPos());
-        if(timeFalling != -1){
+        if (timeFalling != -1) {
             noClip = true;
             dropItem = false;
         }
