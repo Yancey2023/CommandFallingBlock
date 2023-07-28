@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "commandfallingblock",
+  "version": "${version}",
+
+  "name": "CommandFallingBlock",
+  "description": "",
+  "authors": [],
+  "contact": {},
+
+  "license": "GPL-3.0",
+  "icon": "assets/commandfallingblock/icon.png",
+
+  "environment": "*",
+  "entrypoints": {},
+
+      "mixins": [
+        "commandfallingblock.mixins.json"
+      ],
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+        "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
