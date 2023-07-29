@@ -116,7 +116,7 @@ public class EntityBetterFallingBlock extends Entity {
             }
             isPrepareDied = true;
             setVelocity(Vec3d.ZERO);
-            dataBlock.run(world, BlockPos.ofFloored(getPos()), false, false);
+            dataBlock.run(world, getRealBlockPos(), false, false);
             return;
         }
         if (!hasNoGravity()) {
@@ -128,7 +128,7 @@ public class EntityBetterFallingBlock extends Entity {
                 return;
             }
             BlockHitResult blockHitResult;
-            BlockPos blockPos = getBlockPos();
+            BlockPos blockPos = getRealBlockPos();
             boolean isConcretePowder = dataBlock.blockState.getBlock() instanceof ConcretePowderBlock;
             boolean isConcretePowderInWater = isConcretePowder && world.getFluidState(blockPos).isIn(FluidTags.WATER);
             if (isConcretePowder && getVelocity().lengthSquared() > 1 && (blockHitResult = world.raycast(new RaycastContext(new Vec3d(prevX, prevY, prevZ), getPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.SOURCE_ONLY, this))).getType() != HitResult.Type.MISS && world.getFluidState(blockHitResult.getBlockPos()).isIn(FluidTags.WATER)) {
@@ -144,6 +144,16 @@ public class EntityBetterFallingBlock extends Entity {
         if (!hasNoGravity()) {
             setVelocity(getVelocity().multiply(0.98));
         }
+    }
+
+    public BlockPos getRealBlockPos() {
+        Vec3d pos = getPos();
+        return new BlockPos(betterFloor(pos.x), betterFloor(pos.y), betterFloor(pos.z));
+    }
+
+    public static int betterFloor(double num) {
+        int a = (int) Math.floor(num);
+        return num % 1 > 0.9 ? a + 1 : a;
     }
 
     @Override

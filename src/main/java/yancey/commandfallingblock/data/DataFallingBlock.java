@@ -1,18 +1,13 @@
 package yancey.commandfallingblock.data;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.slf4j.Logger;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
 public record DataFallingBlock(DataBlock dataBlock, Vec3d pos, Vec3d motion, boolean hasGravity, int timeFalling) {
 
-    private static final Logger logger = LogUtils.getLogger();
-
     public void run(World world) {
-        logger.warn(toString());
         world.spawnEntity(new EntityBetterFallingBlock(world, pos, motion, dataBlock, !hasGravity, timeFalling));
     }
 
@@ -50,12 +45,18 @@ public record DataFallingBlock(DataBlock dataBlock, Vec3d pos, Vec3d motion, boo
                 motionY *= 0.98;
                 motionZ *= 0.98;
             }
+            double a = (1 - Math.pow(0.98, tickLiving)) * 50;
+            posStart = new Vec3d(
+                    x,
+                    y,
+                    z
+            );
             posStart = new Vec3d(x, y, z);
         } else {
             posStart = new Vec3d(
-                    posEnd.x + tickLiving * motionStart.x,
-                    posEnd.y + tickLiving * motionStart.y,
-                    posEnd.z + tickLiving * motionStart.z
+                    posEnd.x - tickLiving * motionStart.x,
+                    posEnd.y - tickLiving * motionStart.y,
+                    posEnd.z - tickLiving * motionStart.z
             );
         }
         return new DataFallingBlock(dataBlock, posStart, motionStart, false, tickLiving);
@@ -103,9 +104,9 @@ public record DataFallingBlock(DataBlock dataBlock, Vec3d pos, Vec3d motion, boo
         } else {
             tick = (int) (yMove / motionStart.y);
             posStart = new Vec3d(
-                    posEnd.x + tick * motionStart.x,
-                    posEnd.y + tick * motionStart.y,
-                    posEnd.z + tick * motionStart.z
+                    posEnd.x - tick * motionStart.x,
+                    posEnd.y - tick * motionStart.y,
+                    posEnd.z - tick * motionStart.z
             );
         }
         return new DataFallingBlock(dataBlock, posStart, motionStart, false, tick);
@@ -167,15 +168,5 @@ public record DataFallingBlock(DataBlock dataBlock, Vec3d pos, Vec3d motion, boo
 
     public static DataFallingBlock moveFromBlockPosToBlockPosByTick(DataBlock dataBlock, BlockPos posStart, BlockPos posEnd, boolean hasGravity, int tick) {
         return moveFromPosToPosByTick(dataBlock, Vec3d.ofBottomCenter(posStart), Vec3d.ofBottomCenter(posEnd), hasGravity, tick);
-    }
-
-    @Override
-    public String toString() {
-        return "DataFallingBlock{" +
-                ", pos=" + pos +
-                ", motion=" + motion +
-                ", hasGravity=" + hasGravity +
-                ", timeFalling=" + timeFalling +
-                '}';
     }
 }

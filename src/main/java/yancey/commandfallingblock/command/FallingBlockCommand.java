@@ -44,23 +44,24 @@ public class FallingBlockCommand {
                         .then(argument("start", Vec3ArgumentType.vec3(false))
                                 .then(CommandManager.argument("motionX", DoubleArgumentType.doubleArg())
                                         .then(CommandManager.argument("motionY", DoubleArgumentType.doubleArg())
-                                                .then(CommandManager.argument("motionZ", DoubleArgumentType.doubleArg()))
-                                                .then(CommandManager.argument("hasGravity", BoolArgumentType.bool())
-                                                        .then(argument("block", BlockStateArgumentType.blockState(commandRegistryAccess))
-                                                                .executes(context -> {
-                                                                            BlockStateArgument blockStateArgument = BlockStateArgumentType.getBlockState(context, "block");
-                                                                            DataFallingBlock.moveFromPos(
-                                                                                    new DataBlock(blockStateArgument.getBlockState(), ((BlockStateArgumentAccessor) blockStateArgument).getData()),
-                                                                                    Vec3ArgumentType.getVec3(context, "start"),
-                                                                                    new Vec3d(
-                                                                                            DoubleArgumentType.getDouble(context, "motionX"),
-                                                                                            DoubleArgumentType.getDouble(context, "motionY"),
-                                                                                            DoubleArgumentType.getDouble(context, "motionZ")
-                                                                                    ),
-                                                                                    BoolArgumentType.getBool(context, "hasGravity")
-                                                                            ).run(context.getSource().getWorld());
-                                                                            return 1;
-                                                                        }
+                                                .then(CommandManager.argument("motionZ", DoubleArgumentType.doubleArg())
+                                                        .then(CommandManager.argument("hasGravity", BoolArgumentType.bool())
+                                                                .then(argument("block", BlockStateArgumentType.blockState(commandRegistryAccess))
+                                                                        .executes(context -> {
+                                                                                    BlockStateArgument blockStateArgument = BlockStateArgumentType.getBlockState(context, "block");
+                                                                                    DataFallingBlock.moveFromPos(
+                                                                                            new DataBlock(blockStateArgument.getBlockState(), ((BlockStateArgumentAccessor) blockStateArgument).getData()),
+                                                                                            Vec3ArgumentType.getVec3(context, "start"),
+                                                                                            new Vec3d(
+                                                                                                    DoubleArgumentType.getDouble(context, "motionX"),
+                                                                                                    DoubleArgumentType.getDouble(context, "motionY"),
+                                                                                                    DoubleArgumentType.getDouble(context, "motionZ")
+                                                                                            ),
+                                                                                            BoolArgumentType.getBool(context, "hasGravity")
+                                                                                    ).run(context.getSource().getWorld());
+                                                                                    return 1;
+                                                                                }
+                                                                        )
                                                                 )
                                                         )
                                                 )
@@ -71,23 +72,24 @@ public class FallingBlockCommand {
                         .then(argument("start", BlockPosArgumentType.blockPos())
                                 .then(CommandManager.argument("motionX", DoubleArgumentType.doubleArg())
                                         .then(CommandManager.argument("motionY", DoubleArgumentType.doubleArg())
-                                                .then(CommandManager.argument("motionZ", DoubleArgumentType.doubleArg()))
-                                                .then(CommandManager.argument("hasGravity", BoolArgumentType.bool())
-                                                        .then(argument("block", BlockStateArgumentType.blockState(commandRegistryAccess))
-                                                                .executes(context -> {
-                                                                            BlockStateArgument blockStateArgument = BlockStateArgumentType.getBlockState(context, "block");
-                                                                            DataFallingBlock.moveFromBlockPos(
-                                                                                    new DataBlock(blockStateArgument.getBlockState(), ((BlockStateArgumentAccessor) blockStateArgument).getData()),
-                                                                                    BlockPosArgumentType.getLoadedBlockPos(context, "start"),
-                                                                                    new Vec3d(
-                                                                                            DoubleArgumentType.getDouble(context, "motionX"),
-                                                                                            DoubleArgumentType.getDouble(context, "motionY"),
-                                                                                            DoubleArgumentType.getDouble(context, "motionZ")
-                                                                                    ),
-                                                                                    BoolArgumentType.getBool(context, "hasGravity")
-                                                                            ).run(context.getSource().getWorld());
-                                                                            return 1;
-                                                                        }
+                                                .then(CommandManager.argument("motionZ", DoubleArgumentType.doubleArg())
+                                                        .then(CommandManager.argument("hasGravity", BoolArgumentType.bool())
+                                                                .then(argument("block", BlockStateArgumentType.blockState(commandRegistryAccess))
+                                                                        .executes(context -> {
+                                                                                    BlockStateArgument blockStateArgument = BlockStateArgumentType.getBlockState(context, "block");
+                                                                                    DataFallingBlock.moveFromBlockPos(
+                                                                                            new DataBlock(blockStateArgument.getBlockState(), ((BlockStateArgumentAccessor) blockStateArgument).getData()),
+                                                                                            BlockPosArgumentType.getLoadedBlockPos(context, "start"),
+                                                                                            new Vec3d(
+                                                                                                    DoubleArgumentType.getDouble(context, "motionX"),
+                                                                                                    DoubleArgumentType.getDouble(context, "motionY"),
+                                                                                                    DoubleArgumentType.getDouble(context, "motionZ")
+                                                                                            ),
+                                                                                            BoolArgumentType.getBool(context, "hasGravity")
+                                                                                    ).run(context.getSource().getWorld());
+                                                                                    return 1;
+                                                                                }
+                                                                        )
                                                                 )
                                                         )
                                                 )
@@ -360,8 +362,8 @@ public class FallingBlockCommand {
                                 )
                         )
                 ).then(literal("moveFromBlockPosToBlockPosByTick")
-                        .then(argument("start", Vec3ArgumentType.vec3())
-                                .then(argument("end", Vec3ArgumentType.vec3())
+                        .then(argument("start", BlockPosArgumentType.blockPos())
+                                .then(argument("end", BlockPosArgumentType.blockPos())
                                         .then(CommandManager.argument("hasGravity", BoolArgumentType.bool())
                                                 .then(argument("tick", IntegerArgumentType.integer(0))
                                                         .then(argument("block", BlockStateArgumentType.blockState(commandRegistryAccess))
