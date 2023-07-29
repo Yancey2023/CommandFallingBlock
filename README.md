@@ -8,24 +8,34 @@ CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来�
 
 #### 指令
 
-- `fallingblock moveFromPos <posStart> <motion> <block>`  
-类似于原版掉落方块的效果，碰到障碍物会停止，并且控制刚生成时的加速度
+- `fallingblock moveFromPos <posStart> <motion> <hasGravity> <block>`  
+`fallingblock moveFromBlockPos <posStart> <motion> <hasGravity> <block>`  
+类似于原版掉落方块的效果，碰到障碍物会停止，并且控制刚生成时的速度和是否有重力
 
 
-- `fallingblock moveFromPosByTick <posStart> <motion> <tick> <block>`  
-只运动固定的时间，从某个坐标开始运动，并且控制刚生成时的加速度
+- `fallingblock moveFromPosByTick <posStart> <motion> <hasGravity> <tick> <block>`  
+`fallingblock moveFromBlockPosByTick <posStart> <motion> <hasGravity> <tick> <block>`  
+只运动固定的时间，从某个坐标开始运动，并且控制刚初速度和是否有重力
 
 
-- `fallingblock moveToPosByTick <posEnd> <motion> <tick> <block>`  
-只运动固定的时间，运动到某个坐标，并且控制刚生成时的加速度
+- `fallingblock moveToPosByTick <posEnd> <motion> <hasGravity> <tick> <block>`  
+`fallingblock moveToBlockPosByTick <posEnd> <motion> <hasGravity> <tick> <block>`  
+只运动固定的时间，运动到某个坐标，并且控制刚初速度和是否有重力
 
 
-- `fallingblock moveToPosByYMove <posEnd> <motion> <yMove> <block>`  
-运动到某个坐标，并且控制y轴移动的距离，并且控制刚生成时的加速度
+- `fallingblock moveToPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block>`  
+`fallingblock moveToBlockPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block>`  
+运动到某个坐标，并且控制y轴移动的距离，并且控制初速度和是否有重力
 
 
-- `fallingblock moveFromPosToPos <posStart> <posEnd> <motionY> <block>`  
-从某个坐标运动到某个坐标，并且控制刚生成的时候y轴的加速度
+- `fallingblock moveFromPosToPosByMotionY <posStart> <posEnd> <motionY> <block>`  
+`fallingblock moveFromBlockPosToBlockPosByMotionY <posStart> <posEnd> <motionY> <block>`  
+从某个坐标运动到某个坐标，并且控制y轴初速度，一定有重力
+
+
+- `fallingblock moveFromPosToPosByTick <posStart> <posEnd> <tick> <block>`  
+`fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <tick> <block>`  
+只运动固定的时间，从某个坐标运动到某个坐标，并且控制y轴初速度，并且控制初速度和是否有重力
 
 #### 参数解释
 
@@ -44,15 +54,13 @@ CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来�
 - `yMove` - 初位置到目的地的y轴坐标差(末位置y-初位置y，可负数)
 
 
+- `hasGravity` - 是否有重力(没有重力是匀速直线运动)
+
+
 - `tick` - 到达目的地的时间(单位是游戏刻)
 
 
 - `block` - 方块
-
-#### 注意事项
-
-posStart和posEnd检测到输入的x轴或z轴坐标是整数，会自动加0.5，因此可以当作方块坐标写  
-比如：输入`2 3.2 4.0` 会变成 `2.5 3.2 4.0`
 
 ## 关于作者
 

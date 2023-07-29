@@ -13,7 +13,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashReportSection;
@@ -22,7 +21,6 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import yancey.commandfallingblock.CommandFallingBlock;
@@ -41,7 +39,7 @@ public class EntityBetterFallingBlock extends Entity {
 
     public DataBlock dataBlock;
     public boolean dropItem = true;
-    private boolean cancelDrop;
+    private boolean cancelDrop, isPrepareDied = false;
     private boolean hurtEntities;
     private int fallHurtMax = 40;
     private float fallHurtAmount = 2.0F;
@@ -53,7 +51,7 @@ public class EntityBetterFallingBlock extends Entity {
         dataBlock = new DataBlock(Blocks.SAND.getDefaultState(), null);
     }
 
-    private EntityBetterFallingBlock(World world, Vec3d pos, Vec3d motion, DataBlock dataBlock, int timeFalling) {
+    public EntityBetterFallingBlock(World world, Vec3d pos, Vec3d motion, DataBlock dataBlock, boolean hasNoGravity, int timeFalling) {
         super(BETTER_FALLING_BLOCK, world);
         this.dataBlock = dataBlock;
         intersectionChecked = true;
@@ -64,21 +62,11 @@ public class EntityBetterFallingBlock extends Entity {
         prevZ = pos.z;
         setFallingBlockPos(getBlockPos());
         this.timeFalling = timeFalling;
+        setNoGravity(hasNoGravity);
         if (timeFalling >= 0) {
             noClip = true;
             dropItem = false;
         }
-    }
-
-    public static EntityBetterFallingBlock fall(World world, Vec3d pos, Vec3d motion, DataBlock dataBlock, int time) {
-        DataBlock dataBlock1 = dataBlock;
-        if (dataBlock1.blockState.contains(Properties.WATERLOGGED)) {
-            dataBlock1 = new DataBlock(dataBlock.blockState.with(Properties.WATERLOGGED, false), dataBlock.nbtCompound);
-        }
-        EntityBetterFallingBlock entityBetterFallingBlock = new EntityBetterFallingBlock(world, pos, motion, dataBlock1, time);
-        world.setBlockState(BlockPos.ofFloored(pos), dataBlock.blockState.getFluidState().getBlockState(), Block.NOTIFY_ALL);
-        world.spawnEntity(entityBetterFallingBlock);
-        return entityBetterFallingBlock;
     }
 
     @Override
@@ -116,22 +104,29 @@ public class EntityBetterFallingBlock extends Entity {
             return;
         }
         World world = getWorld();
+        if (isPrepareDied) {
+            discard();
+            return;
+        }
         if (timeFalling > 0) {
             timeFalling--;
         } else if (timeFalling == 0) {
-            discard();
             if (world.isClient) {
                 return;
             }
-            BlockPos blockPos = BlockPos.ofFloored(getPos());
-            dataBlock.run(world, blockPos, false, false);
+            isPrepareDied = true;
+            setVelocity(Vec3d.ZERO);
+            dataBlock.run(world, BlockPos.ofFloored(getPos()), false, false);
             return;
         }
         if (!hasNoGravity()) {
             setVelocity(getVelocity().add(0, -0.04, 0));
         }
         move(MovementType.SELF, getVelocity());
-        if (timeFalling < 0 && !world.isClient) {
+        if (timeFalling < 0) {
+            if (world.isClient) {
+                return;
+            }
             BlockHitResult blockHitResult;
             BlockPos blockPos = getBlockPos();
             boolean isConcretePowder = dataBlock.blockState.getBlock() instanceof ConcretePowderBlock;
@@ -141,15 +136,14 @@ public class EntityBetterFallingBlock extends Entity {
                 isConcretePowderInWater = true;
             }
             if (isOnGround() || isConcretePowderInWater) {
-                BlockState blockState = world.getBlockState(blockPos);
                 setVelocity(getVelocity().multiply(0.7, -0.5, 0.7));
-                if (!blockState.isOf(Blocks.MOVING_PISTON)) {
-                    discard();
-                    dataBlock.run(world, blockPos, false, !cancelDrop && world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS));
-                }
+                discard();
+                dataBlock.run(world, blockPos, false, false);
             }
         }
-        setVelocity(getVelocity().multiply(0.98));
+        if (!hasNoGravity()) {
+            setVelocity(getVelocity().multiply(0.98));
+        }
     }
 
     @Override
@@ -250,6 +244,7 @@ public class EntityBetterFallingBlock extends Entity {
         timeFalling = packet.timeFalling;
         intersectionChecked = true;
         setFallingBlockPos(getBlockPos());
+        setNoGravity(packet.hasNoGravity);
         if (timeFalling != -1) {
             noClip = true;
             dropItem = false;

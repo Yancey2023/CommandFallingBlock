@@ -20,13 +20,14 @@ public class PacketSummonFallingBlock {
     public final float pitch;
     public final float yaw;
     public final DataBlock dataBlock;
+    public final boolean hasNoGravity;
     public final int timeFalling;
 
     public PacketSummonFallingBlock(EntityBetterFallingBlock entity) {
-        this(entity.getId(), entity.getUuid(), entity.getX(), entity.getY(), entity.getZ(), entity.getPitch(), entity.getYaw(), entity.getVelocity(), entity.dataBlock, entity.timeFalling);
+        this(entity.getId(), entity.getUuid(), entity.getX(), entity.getY(), entity.getZ(), entity.getPitch(), entity.getYaw(), entity.getVelocity(), entity.dataBlock,entity.hasNoGravity(), entity.timeFalling);
     }
 
-    public PacketSummonFallingBlock(int id, UUID uuid, double x, double y, double z, float pitch, float yaw, Vec3d velocity, DataBlock dataBlock, int timeFalling) {
+    public PacketSummonFallingBlock(int id, UUID uuid, double x, double y, double z, float pitch, float yaw, Vec3d velocity, DataBlock dataBlock,boolean hasNoGravity, int timeFalling) {
         this.id = id;
         this.uuid = uuid;
         this.x = x;
@@ -38,6 +39,7 @@ public class PacketSummonFallingBlock {
         velocityY = velocity.y;
         velocityZ = velocity.z;
         this.dataBlock = dataBlock;
+        this.hasNoGravity = hasNoGravity;
         this.timeFalling = timeFalling;
     }
 
@@ -53,6 +55,7 @@ public class PacketSummonFallingBlock {
         velocityY = buf.readDouble();
         velocityZ = buf.readDouble();
         dataBlock = new DataBlock(buf);
+        hasNoGravity = buf.readBoolean();
         timeFalling = buf.readInt();
     }
 
@@ -68,6 +71,7 @@ public class PacketSummonFallingBlock {
         buf.writeDouble(velocityY);
         buf.writeDouble(velocityZ);
         dataBlock.writeToBuf(buf);
+        buf.writeBoolean(hasNoGravity);
         buf.writeInt(timeFalling);
     }
 
