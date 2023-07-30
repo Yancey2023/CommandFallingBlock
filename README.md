@@ -71,8 +71,7 @@ CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来�
 ## 关于作者
 
 作者：Yancey  
-bilibili：Minecraft_Yancey（可以来关注我，如果可以顺便给我视频三连就更好了）  
-QQ群：766625597（进群聊聊天，作者很活跃的哦）
+QQ：1709185482
 
 ## 你可能关心的问题
 
