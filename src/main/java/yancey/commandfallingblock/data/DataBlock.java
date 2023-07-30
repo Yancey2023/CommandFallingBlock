@@ -6,7 +6,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
@@ -30,11 +29,6 @@ public class DataBlock {
         } else {
             this.nbtCompound = null;
         }
-    }
-
-    public DataBlock(PacketByteBuf packetByteBuf) {
-        blockState = Block.getStateFromRawId(packetByteBuf.readInt());
-        nbtCompound = packetByteBuf.readNbt();
     }
 
     public NbtCompound writeToNBT() {
@@ -64,11 +58,6 @@ public class DataBlock {
         }
         if (nbtCompound != null) {
             world.addBlockEntity(BlockEntity.createFromNbt(blockPos, blockState, nbtCompound));
-        }
-    }
+        }    }
 
-    public void writeToBuf(PacketByteBuf packetByteBuf) {
-        packetByteBuf.writeInt(Block.getRawIdFromState(blockState));
-        packetByteBuf.writeNbt(nbtCompound);
-    }
 }

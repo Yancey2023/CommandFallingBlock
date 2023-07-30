@@ -39,7 +39,7 @@ public class EntityBetterFallingBlock extends Entity {
 
     public DataBlock dataBlock;
     public boolean dropItem = true;
-    private boolean cancelDrop, isPrepareDied = false;
+    private boolean cancelDrop;
     private boolean hurtEntities;
     private int fallHurtMax = 40;
     private float fallHurtAmount = 2.0F;
@@ -102,7 +102,7 @@ public class EntityBetterFallingBlock extends Entity {
 
     @Override
     public void tick() {
-        if (isPrepareDied || dataBlock.blockState.isAir()) {
+        if (dataBlock.blockState.isAir()) {
             discard();
             return;
         }
@@ -111,14 +111,14 @@ public class EntityBetterFallingBlock extends Entity {
         if (timeFalling == tickMove + 1) {
             setVelocity(Vec3d.ZERO);
             setNoGravity(true);
-            if(!world.isClient && tickMove >= age){
-                dataBlock.run(world, getRealBlockPos(), false, false);
-                isPrepareDied = true;
+            if (!world.isClient && tickMove >= age) {
+                dataBlock.run(world, getBlockPos(), false, false);
+                discard();
             }
             return;
         }
-        if(!world.isClient && timeFalling == age){
-            isPrepareDied = true;
+        if (!world.isClient && timeFalling == age) {
+            discard();
             return;
         }
         if (!hasNoGravity()) {
@@ -127,7 +127,7 @@ public class EntityBetterFallingBlock extends Entity {
         move(MovementType.SELF, getVelocity());
         if (tickMove < 0 && !world.isClient) {
             BlockHitResult blockHitResult;
-            BlockPos blockPos = getRealBlockPos();
+            BlockPos blockPos = getBlockPos();
             boolean isConcretePowder = dataBlock.blockState.getBlock() instanceof ConcretePowderBlock;
             boolean isConcretePowderInWater = isConcretePowder && world.getFluidState(blockPos).isIn(FluidTags.WATER);
             if (isConcretePowder && getVelocity().lengthSquared() > 1 && (blockHitResult = world.raycast(new RaycastContext(new Vec3d(prevX, prevY, prevZ), getPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.SOURCE_ONLY, this))).getType() != HitResult.Type.MISS && world.getFluidState(blockHitResult.getBlockPos()).isIn(FluidTags.WATER)) {
@@ -143,16 +143,6 @@ public class EntityBetterFallingBlock extends Entity {
         if (!hasNoGravity()) {
             setVelocity(getVelocity().multiply(0.98));
         }
-    }
-
-    public BlockPos getRealBlockPos() {
-        Vec3d pos = getPos();
-        return new BlockPos(betterFloor(pos.x), betterFloor(pos.y), betterFloor(pos.z));
-    }
-
-    public static int betterFloor(double num) {
-        return MathHelper.floor(num);
-//        return MathHelper.floor((float) num + 0.2f);
     }
 
     @Override
@@ -196,7 +186,6 @@ public class EntityBetterFallingBlock extends Entity {
         nbtCompound.putFloat("FallHurtAmount", fallHurtAmount);
         nbtCompound.putInt("FallHurtMax", fallHurtMax);
         nbtCompound.putBoolean("CancelDrop", cancelDrop);
-        nbtCompound.putBoolean("IsPreparedDied", isPrepareDied);
         nbtCompound.putInt("TickMove", tickMove);
         nbtCompound.putInt("Age", age);
     }
@@ -216,7 +205,6 @@ public class EntityBetterFallingBlock extends Entity {
             dropItem = nbtCompound.getBoolean("DropItem");
         }
         cancelDrop = nbtCompound.getBoolean("CancelDrop");
-        isPrepareDied = nbtCompound.getBoolean("IsPreparedDied");
         tickMove = nbtCompound.getInt("TickMove");
         age = nbtCompound.getInt("Age");
     }
@@ -253,13 +241,13 @@ public class EntityBetterFallingBlock extends Entity {
         setId(packet.id);
         setUuid(packet.uuid);
         setVelocity(packet.velocity);
-        dataBlock = packet.dataBlock;
+        dataBlock = new DataBlock(packet.blockState, null);
         tickMove = packet.tickMove;
-        age = packet.age;
+        age = -1;
         intersectionChecked = true;
         setFallingBlockPos(getBlockPos());
         setNoGravity(packet.hasNoGravity);
-        if (timeFalling != -1) {
+        if (tickMove >= 0) {
             noClip = true;
             dropItem = false;
         }

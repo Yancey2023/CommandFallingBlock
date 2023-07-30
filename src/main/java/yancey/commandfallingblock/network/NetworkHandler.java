@@ -21,7 +21,6 @@ public class NetworkHandler {
 
     @Environment(EnvType.CLIENT)
     public static void initClient() {
-        //生成掉落方块
         ClientPlayNetworking.registerGlobalReceiver(ID_SUMMON_FALLING_BLOCK, (client, handler, buf, responseSender) -> {
             ClientWorld world = handler.getWorld();
             PacketSummonFallingBlock packet = new PacketSummonFallingBlock(buf);
