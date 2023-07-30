@@ -2,7 +2,7 @@
 
 ## 简介
 
-CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来实现方便得生成掉落方块，目前只兼容我的世界1.20.1。
+CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来实现方便地生成掉落方块，目前只兼容我的世界1.20.1。
 
 ## 模组怎么用
 
