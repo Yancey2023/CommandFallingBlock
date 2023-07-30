@@ -247,14 +247,12 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     public void onSpawnPacket(PacketSummonFallingBlock packet) {
-        updateTrackedPosition(packet.x, packet.y, packet.z);
-        refreshPositionAfterTeleport(packet.x, packet.y, packet.z);
-        setPosition(packet.x, packet.y, packet.z);
-        setPitch(packet.pitch);
-        setYaw(packet.yaw);
+        getTrackedPosition().setPos(packet.pos);
+        refreshPositionAfterTeleport(packet.pos);
+        setPosition(packet.pos);
         setId(packet.id);
         setUuid(packet.uuid);
-        setVelocity(packet.velocityX, packet.velocityY, packet.velocityZ);
+        setVelocity(packet.velocity);
         dataBlock = packet.dataBlock;
         tickMove = packet.tickMove;
         age = packet.age;

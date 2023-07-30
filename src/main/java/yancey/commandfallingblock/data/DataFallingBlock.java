@@ -143,14 +143,14 @@ public record DataFallingBlock(DataBlock dataBlock, Vec3d pos, Vec3d motion, boo
                     ((posEnd.y - posStart.y) * 0.02 + 0.04 * (tickMove - 1)) / (1 - Math.pow(0.98, tickMove - 1)) - 1.96,
                     (posEnd.z - posStart.z) * a
             );
-//            double y = posEnd.y;
-//            double motionY = motionStart.y;
-//            for (int i = 0; i < tickMove; i++) {
-//                motionY -= 0.04;
-//                y -= motionY;
-//                motionY *= 0.98;
-//            }
-//            posStart = new Vec3d(posStart.x,y,posStart.z);
+            double y = posEnd.y;
+            double motionY = motionStart.y;
+            for (int i = 0; i < tickMove; i++) {
+                motionY -= 0.04;
+                y -= motionY;
+                motionY *= 0.98;
+            }
+            posStart = new Vec3d(posStart.x, y, posStart.z);
         } else {
             motionStart = new Vec3d(
                     (posEnd.x - posStart.x) / tickMove,

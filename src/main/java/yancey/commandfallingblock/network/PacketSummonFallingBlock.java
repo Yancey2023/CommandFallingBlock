@@ -1,5 +1,6 @@
 package yancey.commandfallingblock.network;
 
+import net.minecraft.block.Block;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Vec3d;
 import yancey.commandfallingblock.data.DataBlock;
@@ -11,34 +12,22 @@ public class PacketSummonFallingBlock {
 
     public final int id;
     public final UUID uuid;
-    public final double x;
-    public final double y;
-    public final double z;
-    public final double velocityX;
-    public final double velocityY;
-    public final double velocityZ;
-    public final float pitch;
-    public final float yaw;
+    public final Vec3d pos;
+    public final Vec3d velocity;
     public final DataBlock dataBlock;
     public final boolean hasNoGravity;
     public final int tickMove;
     public final int age;
 
     public PacketSummonFallingBlock(EntityBetterFallingBlock entity) {
-        this(entity.getId(), entity.getUuid(), entity.getX(), entity.getY(), entity.getZ(), entity.getPitch(), entity.getYaw(), entity.getVelocity(), entity.dataBlock,entity.hasNoGravity(), entity.tickMove,entity.age);
+        this(entity.getId(), entity.getUuid(), entity.getPos(), entity.getVelocity(), entity.dataBlock,entity.hasNoGravity(), entity.tickMove,entity.age);
     }
 
-    public PacketSummonFallingBlock(int id, UUID uuid, double x, double y, double z, float pitch, float yaw, Vec3d velocity, DataBlock dataBlock, boolean hasNoGravity, int tickMove, int age) {
+    public PacketSummonFallingBlock(int id, UUID uuid, Vec3d pos, Vec3d velocity, DataBlock dataBlock, boolean hasNoGravity, int tickMove, int age) {
         this.id = id;
         this.uuid = uuid;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.pitch = pitch;
-        this.yaw = yaw;
-        velocityX = velocity.x;
-        velocityY = velocity.y;
-        velocityZ = velocity.z;
+        this.pos = pos;
+        this.velocity = velocity;
         this.dataBlock = dataBlock;
         this.hasNoGravity = hasNoGravity;
         this.tickMove = tickMove;
@@ -48,15 +37,9 @@ public class PacketSummonFallingBlock {
     public PacketSummonFallingBlock(PacketByteBuf buf) {
         id = buf.readInt();
         uuid = buf.readUuid();
-        x = buf.readDouble();
-        y = buf.readDouble();
-        z = buf.readDouble();
-        pitch = buf.readFloat();
-        yaw = buf.readFloat();
-        velocityX = buf.readDouble();
-        velocityY = buf.readDouble();
-        velocityZ = buf.readDouble();
-        dataBlock = new DataBlock(buf);
+        pos = new Vec3d(buf.readDouble(),buf.readDouble(),buf.readDouble());
+        velocity = new Vec3d(buf.readDouble(),buf.readDouble(),buf.readDouble());
+        dataBlock = new DataBlock(Block.getStateFromRawId(buf.readInt()),null);
         hasNoGravity = buf.readBoolean();
         tickMove = buf.readInt();
         age = buf.readInt();
@@ -65,15 +48,13 @@ public class PacketSummonFallingBlock {
     public void write(PacketByteBuf buf) {
         buf.writeInt(id);
         buf.writeUuid(uuid);
-        buf.writeDouble(x);
-        buf.writeDouble(y);
-        buf.writeDouble(z);
-        buf.writeFloat(pitch);
-        buf.writeFloat(yaw);
-        buf.writeDouble(velocityX);
-        buf.writeDouble(velocityY);
-        buf.writeDouble(velocityZ);
-        dataBlock.writeToBuf(buf);
+        buf.writeDouble(pos.x);
+        buf.writeDouble(pos.y);
+        buf.writeDouble(pos.z);
+        buf.writeDouble(velocity.x);
+        buf.writeDouble(velocity.y);
+        buf.writeDouble(velocity.z);
+        buf.writeInt(Block.getRawIdFromState(dataBlock.blockState));
         buf.writeBoolean(hasNoGravity);
         buf.writeInt(tickMove);
         buf.writeInt(age);
