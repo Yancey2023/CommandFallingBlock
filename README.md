@@ -8,34 +8,37 @@ CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来�
 
 #### 指令
 
-- `fallingblock moveFromPos <posStart> <motion> <hasGravity> <block>`  
-`fallingblock moveFromBlockPos <posStart> <motion> <hasGravity> <block>`  
-类似于原版掉落方块的效果，碰到障碍物会停止，并且控制刚生成时的速度和是否有重力
+- `fallingblock moveFromPos <posStart> <motion> <hasGravity> <block> [age]`  
+`fallingblock moveFromBlockPos <posStart> <motion> <hasGravity> <block> [age]`  
+类似于原版掉落方块的效果，碰到障碍物会停止，并且控制初速度和是否受重力影响
 
 
-- `fallingblock moveFromPosByTick <posStart> <motion> <hasGravity> <tick> <block>`  
-`fallingblock moveFromBlockPosByTick <posStart> <motion> <hasGravity> <tick> <block>`  
-只运动固定的时间，从某个坐标开始运动，并且控制刚初速度和是否有重力
+- `fallingblock moveFromPosByTick <posStart> <motion> <hasGravity> <tickMove> <block> [age]`  
+`fallingblock moveFromBlockPosByTick <posStart> <motion> <hasGravity> <tickMove> <block> [age]`  
+只运动固定的时间，从某个坐标开始运动，并且控制初速度和是否受重力影响
 
 
-- `fallingblock moveToPosByTick <posEnd> <motion> <hasGravity> <tick> <block>`  
-`fallingblock moveToBlockPosByTick <posEnd> <motion> <hasGravity> <tick> <block>`  
-只运动固定的时间，运动到某个坐标，并且控制刚初速度和是否有重力
+- `fallingblock moveToPosByTick <posEnd> <motion> <hasGravity> <tickMove> <block> [age]`  
+`fallingblock moveToBlockPosByTick <posEnd> <motion> <hasGravity> <tickMove> <block> [age]`  
+只运动固定的时间，运动到某个坐标，并且控制初速度和是否受重力影响
 
 
-- `fallingblock moveToPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block>`  
-`fallingblock moveToBlockPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block>`  
-运动到某个坐标，并且控制y轴移动的距离，并且控制初速度和是否有重力
+- `fallingblock moveToPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block> [age]`  
+`fallingblock moveToBlockPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block> [age]`  
+运动到某个坐标，并且控制y轴移动的距离，并且控制初速度和是否受重力影响  
+(受重力影响时终点位置无偏差,但y轴移动距离有偏差)
 
 
-- `fallingblock moveFromPosToPosByMotionY <posStart> <posEnd> <motionY> <block>`  
-`fallingblock moveFromBlockPosToBlockPosByMotionY <posStart> <posEnd> <motionY> <block>`  
-从某个坐标运动到某个坐标，并且控制y轴初速度，一定有重力
+- `fallingblock moveFromPosToPosByMotionY <posStart> <posEnd> <motionY> <block> [age]`  
+`fallingblock moveFromBlockPosToBlockPosByMotionY <posStart> <posEnd> <motionY> <block> [age]`  
+从某个坐标运动到某个坐标，并且控制y轴初速度，一定受重力影响  
+(受重力影响时初始位置有偏差)
 
 
-- `fallingblock moveFromPosToPosByTick <posStart> <posEnd> <tick> <block>`  
-`fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <tick> <block>`  
-只运动固定的时间，从某个坐标运动到某个坐标，并且控制y轴初速度，并且控制初速度和是否有重力
+- `fallingblock moveFromPosToPosByTick <posStart> <posEnd> <tickMove> <block> [age]`  
+`fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <tickMove> <block> [age]`  
+只运动固定的时间，从某个坐标运动到某个坐标，并且控制y轴初速度，并且控制初速度和是否受重力影响  
+(受重力影响时终点位置有偏差)
 
 #### 参数解释
 
@@ -54,13 +57,16 @@ CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来�
 - `yMove` - 初位置到目的地的y轴坐标差(末位置y-初位置y，可负数)
 
 
-- `hasGravity` - 是否有重力(没有重力是匀速直线运动)
+- `hasGravity` - 是否受重力影响(不受重力影响是匀速直线运动)
 
 
-- `tick` - 到达目的地的时间(单位是游戏刻)
+- `tickMove` - 到达目的地的时间(单位是游戏刻)
 
 
 - `block` - 方块
+
+
+- `age` - 掉落方块实体的最大存在时间(单位是游戏刻)
 
 ## 关于作者
 

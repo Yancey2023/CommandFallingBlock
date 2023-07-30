@@ -43,7 +43,9 @@ public class EntityBetterFallingBlock extends Entity {
     private boolean hurtEntities;
     private int fallHurtMax = 40;
     private float fallHurtAmount = 2.0F;
-    public int timeFalling;//死亡倒计时,设置为-1变成正常的掉落方块模式
+    private int timeFalling = 0;
+    public int tickMove;
+    public int age;
     protected static final TrackedData<BlockPos> BLOCK_POS = DataTracker.registerData(EntityBetterFallingBlock.class, TrackedDataHandlerRegistry.BLOCK_POS);
 
     public EntityBetterFallingBlock(EntityType<EntityBetterFallingBlock> entityEntityType, World world) {
@@ -51,7 +53,7 @@ public class EntityBetterFallingBlock extends Entity {
         dataBlock = new DataBlock(Blocks.SAND.getDefaultState(), null);
     }
 
-    public EntityBetterFallingBlock(World world, Vec3d pos, Vec3d motion, DataBlock dataBlock, boolean hasNoGravity, int timeFalling) {
+    public EntityBetterFallingBlock(World world, Vec3d pos, Vec3d motion, DataBlock dataBlock, boolean hasNoGravity, int tickMove, int age) {
         super(BETTER_FALLING_BLOCK, world);
         this.dataBlock = dataBlock;
         intersectionChecked = true;
@@ -61,7 +63,8 @@ public class EntityBetterFallingBlock extends Entity {
         prevY = pos.y;
         prevZ = pos.z;
         setFallingBlockPos(getBlockPos());
-        this.timeFalling = timeFalling;
+        this.tickMove = tickMove;
+        this.age = age + 1;
         setNoGravity(hasNoGravity);
         if (timeFalling >= 0) {
             noClip = true;
@@ -99,34 +102,30 @@ public class EntityBetterFallingBlock extends Entity {
 
     @Override
     public void tick() {
-        if (dataBlock.blockState.isAir()) {
+        if (isPrepareDied || dataBlock.blockState.isAir()) {
             discard();
             return;
         }
         World world = getWorld();
-        if (isPrepareDied) {
-            discard();
+        timeFalling++;
+        if (timeFalling == tickMove + 1) {
+            setVelocity(Vec3d.ZERO);
+            setNoGravity(true);
+            if(!world.isClient && tickMove >= age){
+                dataBlock.run(world, getRealBlockPos(), false, false);
+                isPrepareDied = true;
+            }
             return;
         }
-        if (timeFalling > 0) {
-            timeFalling--;
-        } else if (timeFalling == 0) {
-            if (world.isClient) {
-                return;
-            }
+        if(!world.isClient && timeFalling == age){
             isPrepareDied = true;
-            setVelocity(Vec3d.ZERO);
-            dataBlock.run(world, getRealBlockPos(), false, false);
             return;
         }
         if (!hasNoGravity()) {
             setVelocity(getVelocity().add(0, -0.04, 0));
         }
         move(MovementType.SELF, getVelocity());
-        if (timeFalling < 0) {
-            if (world.isClient) {
-                return;
-            }
+        if (tickMove < 0 && !world.isClient) {
             BlockHitResult blockHitResult;
             BlockPos blockPos = getRealBlockPos();
             boolean isConcretePowder = dataBlock.blockState.getBlock() instanceof ConcretePowderBlock;
@@ -152,8 +151,8 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     public static int betterFloor(double num) {
-        int a = (int) Math.floor(num);
-        return num % 1 > 0.9 ? a + 1 : a;
+        return MathHelper.floor(num);
+//        return MathHelper.floor((float) num + 0.2f);
     }
 
     @Override
@@ -197,6 +196,9 @@ public class EntityBetterFallingBlock extends Entity {
         nbtCompound.putFloat("FallHurtAmount", fallHurtAmount);
         nbtCompound.putInt("FallHurtMax", fallHurtMax);
         nbtCompound.putBoolean("CancelDrop", cancelDrop);
+        nbtCompound.putBoolean("IsPreparedDied", isPrepareDied);
+        nbtCompound.putInt("TickMove", tickMove);
+        nbtCompound.putInt("Age", age);
     }
 
     @Override
@@ -214,6 +216,9 @@ public class EntityBetterFallingBlock extends Entity {
             dropItem = nbtCompound.getBoolean("DropItem");
         }
         cancelDrop = nbtCompound.getBoolean("CancelDrop");
+        isPrepareDied = nbtCompound.getBoolean("IsPreparedDied");
+        tickMove = nbtCompound.getInt("TickMove");
+        age = nbtCompound.getInt("Age");
     }
 
     @Override
@@ -251,7 +256,8 @@ public class EntityBetterFallingBlock extends Entity {
         setUuid(packet.uuid);
         setVelocity(packet.velocityX, packet.velocityY, packet.velocityZ);
         dataBlock = packet.dataBlock;
-        timeFalling = packet.timeFalling;
+        tickMove = packet.tickMove;
+        age = packet.age;
         intersectionChecked = true;
         setFallingBlockPos(getBlockPos());
         setNoGravity(packet.hasNoGravity);
