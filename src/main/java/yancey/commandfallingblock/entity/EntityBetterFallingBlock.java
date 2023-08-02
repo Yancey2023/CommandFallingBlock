@@ -211,13 +211,12 @@ public class EntityBetterFallingBlock extends Entity {
         setNoGravity(packet.hasNoGravity);
         if (tickMove >= 0) {
             noClip = true;
-        } else {
-            Block block = dataBlock.blockState.getBlock();
-            if (block instanceof BlockEntityProvider) {
-                blockEntity = ((BlockEntityProvider) block).createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
-                if (dataBlock.nbtCompound != null && blockEntity != null) {
-                    blockEntity.readNbt(dataBlock.nbtCompound);
-                }
+        }
+        Block block = dataBlock.blockState.getBlock();
+        if (block instanceof BlockEntityProvider) {
+            blockEntity = ((BlockEntityProvider) block).createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
+            if (dataBlock.nbtCompound != null && blockEntity != null) {
+                blockEntity.readNbt(dataBlock.nbtCompound);
             }
         }
     }
