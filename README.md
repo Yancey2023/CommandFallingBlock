@@ -35,8 +35,8 @@ CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来�
 (受重力影响时初始位置有偏差)
 
 
-- `fallingblock moveFromPosToPosByTick <posStart> <posEnd> <tickMove> <block> [age]`  
-`fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <tickMove> <block> [age]`  
+- `fallingblock moveFromPosToPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]`  
+`fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]`  
 只运动固定的时间，从某个坐标运动到某个坐标，并且控制y轴初速度，并且控制初速度和是否受重力影响  
 (受重力影响时初始位置有偏差)
 

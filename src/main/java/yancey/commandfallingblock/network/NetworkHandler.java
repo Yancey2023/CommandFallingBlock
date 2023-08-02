@@ -23,7 +23,7 @@ public class NetworkHandler {
     public static void initClient() {
         ClientPlayNetworking.registerGlobalReceiver(ID_SUMMON_FALLING_BLOCK, (client, handler, buf, responseSender) -> {
             ClientWorld world = handler.getWorld();
-            PacketSummonFallingBlock packet = new PacketSummonFallingBlock(buf);
+            SummonFallingBlockPacket packet = new SummonFallingBlockPacket(buf);
             client.execute(() -> {
                 EntityBetterFallingBlock entity = EntityBetterFallingBlock.BETTER_FALLING_BLOCK.create(world);
                 if (entity != null) {
@@ -38,7 +38,7 @@ public class NetworkHandler {
 
     public static void summonFallingBlock(EntityBetterFallingBlock entityBetterFallingBlock, ServerPlayerEntity player) {
         PacketByteBuf packetByteBuf = PacketByteBufs.create();
-        new PacketSummonFallingBlock(entityBetterFallingBlock).write(packetByteBuf);
+        new SummonFallingBlockPacket(entityBetterFallingBlock).write(packetByteBuf);
         ServerPlayNetworking.send(player, ID_SUMMON_FALLING_BLOCK, packetByteBuf);
     }
 

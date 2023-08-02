@@ -14,7 +14,7 @@ import net.minecraft.world.World;
 public class DataBlock {
 
     public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
-    public BlockState blockState;
+    public final BlockState blockState;
     public final NbtCompound nbtCompound;
 
     public DataBlock(BlockState blockState, NbtCompound nbtCompound) {
@@ -53,11 +53,13 @@ public class DataBlock {
                 Block.dropStacks(blockStatePre, world, blockPos, world.getBlockEntity(blockPos));
             }
         }
-        if (!world.setBlockState(blockPos, blockState, 3)) {
+        if (!world.setBlockState(blockPos, blockState)) {
             return;
         }
-        if (nbtCompound != null) {
-            world.addBlockEntity(BlockEntity.createFromNbt(blockPos, blockState, nbtCompound));
-        }    }
+        BlockEntity blockEntity = world.getBlockEntity(blockPos);
+        if (blockEntity != null) {
+            blockEntity.readNbt(nbtCompound);
+        }
+    }
 
 }
