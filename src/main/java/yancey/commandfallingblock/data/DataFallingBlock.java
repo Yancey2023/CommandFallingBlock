@@ -32,10 +32,6 @@ public record DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d 
         return new DataFallingBlock(null, dataBlock, posStart, motionStart, hasGravity, -1, age);
     }
 
-    public static DataFallingBlock moveFromBlockPosByTick(DataBlock dataBlock, BlockPos posStart, Vec3d motionStart, boolean hasGravity, int tickMove, int age) {
-        return moveFromPosByTick(dataBlock, Vec3d.ofBottomCenter(posStart), motionStart, hasGravity, tickMove, age);
-    }
-
     public static DataFallingBlock moveToPosByTick(DataBlock dataBlock, Vec3d posEnd, Vec3d motionStart, boolean hasGravity, int tickMove, int age) {
         Vec3d posStart;
         if (hasGravity) {
@@ -60,10 +56,6 @@ public record DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d 
             );
         }
         return new DataFallingBlock(floorPos(posEnd), dataBlock, posStart, motionStart, hasGravity, tickMove, age);
-    }
-
-    public static DataFallingBlock moveFromBlockPos(DataBlock dataBlock, BlockPos posStart, Vec3d motionStart, boolean hasGravity, int age) {
-        return moveFromPos(dataBlock, Vec3d.ofBottomCenter(posStart), motionStart, hasGravity, age);
     }
 
     public static DataFallingBlock moveToPosByYMove(DataBlock dataBlock, Vec3d posEnd, Vec3d motionStart, boolean hasGravity, double yMove, int age) {
@@ -107,10 +99,6 @@ public record DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d 
         return new DataFallingBlock(floorPos(posEnd), dataBlock, posStart, motionStart, hasGravity, tick, age);
     }
 
-    public static DataFallingBlock moveToBlockPosByTick(DataBlock dataBlock, BlockPos posEnd, Vec3d motionStart, boolean hasGravity, int tickMove, int age) {
-        return moveToPosByTick(dataBlock, Vec3d.ofBottomCenter(posEnd), motionStart, hasGravity, tickMove, age);
-    }
-
     public static DataFallingBlock moveFromPosToPosByMotionY(DataBlock dataBlock, Vec3d posStart, Vec3d posEnd, double motionYStart, int age) {
         int tick = 0;
         double yMove = posEnd.y - posStart.y;
@@ -136,10 +124,6 @@ public record DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d 
         double a = (1 - Math.pow(0.98, tick)) * 50;
         Vec3d motionStart = a == 0 ? new Vec3d(0, motionYStart, 0) : new Vec3d((posEnd.x - posStart.x) / a, motionYStart, (posEnd.z - posStart.z) / a);
         return new DataFallingBlock(floorPos(posEnd), dataBlock, new Vec3d(posStart.x, posEnd.y - y, posStart.z), motionStart, true, tick, age);
-    }
-
-    public static DataFallingBlock moveToBlockPosByYMove(DataBlock dataBlock, BlockPos posEnd, Vec3d motionStart, boolean hasGravity, double yMove, int age) {
-        return moveToPosByYMove(dataBlock, Vec3d.ofBottomCenter(posEnd), motionStart, hasGravity, yMove, age);
     }
 
     public static DataFallingBlock moveFromPosToPosByTick(DataBlock dataBlock, Vec3d posStart, Vec3d posEnd, boolean hasGravity, int tickMove, int age) {
@@ -169,16 +153,8 @@ public record DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d 
         return new DataFallingBlock(floorPos(posEnd), dataBlock, posStart, motionStart, hasGravity, tickMove, age);
     }
 
-    public static DataFallingBlock moveFromBlockPosToBlockPosByMotionY(DataBlock dataBlock, BlockPos posStart, BlockPos posEnd, double motionYStart, int age) {
-        return moveFromPosToPosByMotionY(dataBlock, Vec3d.ofBottomCenter(posStart), Vec3d.ofBottomCenter(posEnd), motionYStart, age);
-    }
-
     public static BlockPos floorPos(Vec3d vec3d) {
         return floorPos(vec3d.x, vec3d.y, vec3d.z);
-    }
-
-    public static DataFallingBlock moveFromBlockPosToBlockPosByTick(DataBlock dataBlock, BlockPos posStart, BlockPos posEnd, boolean hasGravity, int tickMove, int age) {
-        return moveFromPosToPosByTick(dataBlock, Vec3d.ofBottomCenter(posStart), Vec3d.ofBottomCenter(posEnd), hasGravity, tickMove, age);
     }
 
     public static BlockPos floorPos(double x, double y, double z) {
