@@ -11,6 +11,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.tag.FluidTags;
@@ -57,7 +58,6 @@ public class EntityBetterFallingBlock extends Entity {
         prevX = pos.x;
         prevY = pos.y;
         prevZ = pos.z;
-        this.blockPosEnd = blockPosEnd;
         setFallingBlockPos(blockPosEnd);
         this.tickMove = tickMove;
         this.age = age + 1;
@@ -164,6 +164,7 @@ public class EntityBetterFallingBlock extends Entity {
         nbtCompound.putInt("TickMove", tickMove);
         nbtCompound.putInt("Age", age);
         nbtCompound.putInt("PrepareDied", prepareDied);
+        nbtCompound.put("BlockPosEnd",NbtHelper.fromBlockPos(getFallingBlockPos()));
     }
 
     @Override
@@ -173,6 +174,7 @@ public class EntityBetterFallingBlock extends Entity {
         tickMove = nbtCompound.getInt("TickMove");
         age = nbtCompound.getInt("Age");
         prepareDied = nbtCompound.getInt("PrepareDied");
+        setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound.getCompound("BlockPosEnd")));
     }
 
     @Override
@@ -207,7 +209,7 @@ public class EntityBetterFallingBlock extends Entity {
         tickMove = packet.tickMove;
         age = -1;
         intersectionChecked = true;
-        setFallingBlockPos(blockPosEnd);
+        setFallingBlockPos(packet.blockPosEnd);
         setNoGravity(packet.hasNoGravity);
         if (tickMove >= 0) {
             noClip = true;

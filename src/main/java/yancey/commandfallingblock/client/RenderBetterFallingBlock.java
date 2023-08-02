@@ -14,6 +14,7 @@ import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
@@ -40,7 +41,7 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
                     world,
                     blockRenderManager.getModel(blockState),
                     blockState,
-                    entity.getFallingBlockPos(),
+                    BlockPos.ofFloored(entity.getX(), entity.getBoundingBox().maxY, entity.getZ()),
                     matrixStack,
                     vertexConsumerProvider.getBuffer(RenderLayers.getMovingBlockLayer(blockState)),
                     false,
