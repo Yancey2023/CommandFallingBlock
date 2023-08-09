@@ -1,5 +1,6 @@
 package yancey.commandfallingblock.data;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -10,9 +11,12 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldEvents;
+import org.slf4j.Logger;
 
 public class DataBlock {
 
+    public static Logger LOGGER = LogUtils.getLogger();
     public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
     public final BlockState blockState;
     public final NbtCompound nbtCompound;
@@ -47,7 +51,7 @@ public class DataBlock {
         BlockState blockStatePre = world.getBlockState(blockPos);
         if (!blockStatePre.isAir()) {
             if (isDestroy && !(blockState.getBlock() instanceof AbstractFireBlock)) {
-                world.syncWorldEvent(2001, blockPos, Block.getRawIdFromState(blockStatePre));
+                world.syncWorldEvent(WorldEvents.BLOCK_BROKEN, blockPos, Block.getRawIdFromState(blockStatePre));
             }
             if (isDropItem) {
                 Block.dropStacks(blockStatePre, world, blockPos, world.getBlockEntity(blockPos));
@@ -57,8 +61,13 @@ public class DataBlock {
             return;
         }
         BlockEntity blockEntity = world.getBlockEntity(blockPos);
-        if (blockEntity != null) {
-            blockEntity.readNbt(nbtCompound);
+        if (blockEntity != null && nbtCompound != null) {
+            try {
+                blockEntity.readNbt(nbtCompound);
+            } catch (Exception e) {
+                LOGGER.warn("Failed to load block entity from falling block", e);
+            }
+            blockEntity.markDirty();
         }
     }
 

@@ -1,9 +1,7 @@
 package yancey.commandfallingblock.entity;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.ConcretePowderBlock;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
@@ -24,6 +22,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldEvents;
+import net.minecraft.world.event.GameEvent;
 import yancey.commandfallingblock.CommandFallingBlock;
 import yancey.commandfallingblock.data.DataBlock;
 import yancey.commandfallingblock.data.DataFallingBlock;
@@ -115,16 +115,17 @@ public class EntityBetterFallingBlock extends Entity {
         }
         World world = getWorld();
         timeFalling++;
-        if (timeFalling == tickMove + 1) {
+        if (timeFalling >= tickMove + 1 && tickMove >= 0) {
             setVelocity(Vec3d.ZERO);
             setNoGravity(true);
             if (!world.isClient && tickMove >= age) {
                 dataBlock.run(world, blockPosEnd, false, false);
+                onDestroyedOnLanding(dataBlock.blockState.getBlock(),blockPosEnd);
                 prepareDied = 1;
             }
             return;
         }
-        if (!world.isClient && timeFalling == age) {
+        if (!world.isClient && timeFalling >= age && age < 0) {
             discard();
             return;
         }
@@ -145,10 +146,30 @@ public class EntityBetterFallingBlock extends Entity {
                 setVelocity(Vec3d.ZERO);
                 prepareDied = 1;
                 dataBlock.run(world, blockPos, false, false);
+                onDestroyedOnLanding(dataBlock.blockState.getBlock(),blockPos);
             }
         }
         if (!hasNoGravity()) {
             setVelocity(getVelocity().multiply(0.98));
+        }
+    }
+
+    public void onDestroyedOnLanding(Block block, BlockPos pos) {
+        if (!(block instanceof LandingBlock)) {
+            return;
+        }
+        if(block instanceof AnvilBlock){
+            if (!isSilent()) {
+                getWorld().syncWorldEvent(WorldEvents.ANVIL_DESTROYED, pos, 0);
+            }
+        }else if(block instanceof BrushableBlock){
+            Vec3d vec3d = getBoundingBox().getCenter();
+            getWorld().syncWorldEvent(WorldEvents.BLOCK_BROKEN, BlockPos.ofFloored(vec3d), Block.getRawIdFromState(dataBlock.blockState));
+            getWorld().emitGameEvent(this, GameEvent.BLOCK_DESTROY, vec3d);
+        }else if(block instanceof PointedDripstoneBlock) {
+            if (!isSilent()) {
+                getWorld().syncWorldEvent(WorldEvents.POINTED_DRIPSTONE_LANDS, pos, 0);
+            }
         }
     }
 
@@ -164,7 +185,7 @@ public class EntityBetterFallingBlock extends Entity {
         nbtCompound.putInt("TickMove", tickMove);
         nbtCompound.putInt("Age", age);
         nbtCompound.putInt("PrepareDied", prepareDied);
-        nbtCompound.put("BlockPosEnd",NbtHelper.fromBlockPos(getFallingBlockPos()));
+        nbtCompound.put("BlockPosEnd", NbtHelper.fromBlockPos(getFallingBlockPos()));
     }
 
     @Override
@@ -175,6 +196,16 @@ public class EntityBetterFallingBlock extends Entity {
         age = nbtCompound.getInt("Age");
         prepareDied = nbtCompound.getInt("PrepareDied");
         setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound.getCompound("BlockPosEnd")));
+        if (tickMove >= 0) {
+            noClip = true;
+        }
+        Block block = dataBlock.blockState.getBlock();
+        if (block instanceof BlockEntityProvider) {
+            blockEntity = ((BlockEntityProvider) block).createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
+            if (dataBlock.nbtCompound != null && blockEntity != null) {
+                blockEntity.readNbt(dataBlock.nbtCompound);
+            }
+        }
     }
 
     @Override
