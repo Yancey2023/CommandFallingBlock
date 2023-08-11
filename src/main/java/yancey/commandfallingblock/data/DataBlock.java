@@ -57,18 +57,19 @@ public class DataBlock {
                 Block.dropStacks(blockStatePre, world, blockPos, world.getBlockEntity(blockPos));
             }
         }
-        if (!world.setBlockState(blockPos, blockState)) {
+        if (!world.setBlockState(blockPos, blockState) || nbtCompound == null) {
             return;
         }
         BlockEntity blockEntity = world.getBlockEntity(blockPos);
-        if (blockEntity != null && nbtCompound != null) {
-            try {
-                blockEntity.readNbt(nbtCompound);
-            } catch (Exception e) {
-                LOGGER.warn("Failed to load block entity from falling block", e);
-            }
-            blockEntity.markDirty();
+        if (blockEntity == null) {
+            return;
         }
+        try {
+            blockEntity.readNbt(nbtCompound);
+        } catch (Exception e) {
+            LOGGER.warn("Failed to load block entity from falling block", e);
+        }
+        blockEntity.markDirty();
     }
 
 }
