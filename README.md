@@ -31,12 +31,12 @@ move to a position, you can control the y-axis movement distance, which is biase
 
 - `fallingblock moveFromPosToPosByMotionY <posStart> <posEnd> <motionY> <block> [age]`  
 `fallingblock moveFromBlockPosToBlockPosByMotionY <posStart> <posEnd> <motionY> <block> [age]`  
-move to a position, you can control the y-axis initial speed, it must have gravity, the initial position is biased
+move from a position, you can control the y-axis initial speed, it must have gravity, the initial position is biased
 
 
 - `fallingblock moveFromPosToPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]`  
 `fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]`  
-  move to a position, you can control how many ticks it becomes a block, it must have gravity, the initial position is biased
+  move from a position to another position, you can control how many ticks it becomes a block, it must have gravity, the initial position is biased
 
 #### param
 
