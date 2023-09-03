@@ -9,6 +9,7 @@ import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.BlockRenderManager;
+import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.texture.SpriteAtlasTexture;
@@ -22,6 +23,7 @@ import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 @Environment(value = EnvType.CLIENT)
 public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFallingBlock> {
 
+    private static final BlockEntityRenderDispatcher blockEntityRenderDispatcher = MinecraftClient.getInstance().getBlockEntityRenderDispatcher();
     private final BlockRenderManager blockRenderManager;
 
     public RenderBetterFallingBlock(EntityRendererFactory.Context context) {
@@ -32,9 +34,10 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
 
     @Override
     public void render(EntityBetterFallingBlock entity, float yaw, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light) {
-        World world = entity.getWorld();
         BlockState blockState = entity.dataBlock.blockState;
-        if (blockState.getRenderType() == BlockRenderType.MODEL) {
+        BlockRenderType renderType = blockState.getRenderType();
+        World world = entity.getWorld();
+        if (renderType == BlockRenderType.MODEL) {
             matrixStack.push();
             matrixStack.translate(-0.5, 0.0, -0.5);
             blockRenderManager.getModelRenderer().render(
@@ -54,8 +57,10 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
             entity.blockEntity.setWorld(world);
             matrixStack.push();
             matrixStack.translate(-0.5, 0.0, -0.5);
-            MinecraftClient.getInstance().getBlockEntityRenderDispatcher().renderEntity(entity.blockEntity, matrixStack, vertexConsumerProvider, light, OverlayTexture.DEFAULT_UV);
+            blockEntityRenderDispatcher.renderEntity(entity.blockEntity, matrixStack, vertexConsumerProvider, light, OverlayTexture.DEFAULT_UV);
             matrixStack.pop();
+        } else {
+            return;
         }
         super.render(entity, yaw, tickDelta, matrixStack, vertexConsumerProvider, light);
     }

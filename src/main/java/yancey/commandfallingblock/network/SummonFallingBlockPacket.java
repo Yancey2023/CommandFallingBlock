@@ -1,8 +1,5 @@
 package yancey.commandfallingblock.network;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -42,11 +39,7 @@ public class SummonFallingBlockPacket {
         uuid = buf.readUuid();
         pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
         velocity = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
-        BlockState blockState = Block.getStateFromRawId(buf.readInt());
-        dataBlock = new DataBlock(
-                blockState,
-                blockState.getRenderType() != BlockRenderType.MODEL && buf.readBoolean() ? buf.readNbt() : null
-        );
+        dataBlock = DataBlock.createByClientRenderData(buf);
         hasNoGravity = buf.readBoolean();
         tickMove = buf.readInt();
         if (tickMove >= 0) {
@@ -65,15 +58,7 @@ public class SummonFallingBlockPacket {
         buf.writeDouble(velocity.x);
         buf.writeDouble(velocity.y);
         buf.writeDouble(velocity.z);
-        buf.writeInt(Block.getRawIdFromState(dataBlock.blockState));
-        if (dataBlock.blockState.getRenderType() != BlockRenderType.MODEL) {
-            if (dataBlock.nbtCompound == null) {
-                buf.writeBoolean(false);
-            } else {
-                buf.writeBoolean(true);
-                buf.writeNbt(dataBlock.nbtCompound);
-            }
-        }
+        dataBlock.writeClientRenderData(buf, blockPosEnd);
         buf.writeBoolean(hasNoGravity);
         buf.writeInt(tickMove);
         if (tickMove >= 0) {

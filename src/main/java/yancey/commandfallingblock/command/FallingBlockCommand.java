@@ -113,7 +113,7 @@ public class FallingBlockCommand {
 
     private static void checkAndRun(CommandContext<ServerCommandSource> context, DataFallingBlock dataFallingBlock) {
         if (dataFallingBlock == null) {
-            throw new CommandException(Text.translatable("command.fallingblock.failToCalculate"));
+            throw new CommandException(Text.translatable("command.commandfallingblock.fallingblock.failedToCalculate"));
         } else {
             dataFallingBlock.run(context.getSource().getWorld());
         }

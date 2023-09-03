@@ -1,4 +1,5 @@
 {
-  "entity.setblockplus.better_falling_block_type" :  "falling_block",
-  "command.fallingblock.failToCalculate" :  "fail to calculate,the falling block doesn't exist"
+  "entity.commandfallingblock.better_falling_block" :  "Falling Block",
+  "entity.commandfallingblock.better_falling_block_type" :  "Falling %s",
+  "command.commandfallingblock.fallingblock.failedToCalculate" :  "failed to calculate,the falling block cannot move to the target position"
 }
