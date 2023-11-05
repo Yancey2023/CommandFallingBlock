@@ -28,7 +28,7 @@ public class NetworkHandler {
                 EntityBetterFallingBlock entity = EntityBetterFallingBlock.BETTER_FALLING_BLOCK.create(world);
                 if (entity != null) {
                     entity.onSpawnPacket(packet);
-                    world.addEntity(packet.id, entity);
+                    world.addEntity(entity);
                 } else {
                     LOGGER.warn("Skipping Entity with id {}", EntityBetterFallingBlock.BETTER_FALLING_BLOCK);
                 }
