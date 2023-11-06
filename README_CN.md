@@ -4,7 +4,11 @@
 
 ## 简介
 
-CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来实现方便地生成掉落方块，目前只兼容我的世界1.20.1。
+CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来实现方便地生成掉落方块。
+
+游戏版本：`1.16.5`, `1.20.1`, `1.20.2`
+
+support minecraft versions: 1.16.5, 1.20.1, 1.20.2
 
 ## 模组怎么用
 

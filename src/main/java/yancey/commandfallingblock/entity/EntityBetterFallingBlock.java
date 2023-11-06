@@ -103,13 +103,6 @@ public class EntityBetterFallingBlock extends Entity {
 
     @Override
     public void tick() {
-        if(timeFalling >= tickMove + 1){
-            if(world.isClient){
-                LOGGER.warn("Client : " + getPos());
-            }else{
-                LOGGER.warn("Server : " + getPos());
-            }
-        }
         if (prepareDied == 0) {
             remove();
             return;
@@ -127,8 +120,6 @@ public class EntityBetterFallingBlock extends Entity {
             return;
         }
         if (timeFalling >= tickMove + 1 && tickMove >= 0) {
-            setVelocity(Vec3d.ZERO);
-            setNoGravity(true);
             if (!world.isClient && age < 0) {
                 dataBlock.run((ServerWorld) world, blockPosEnd, false, false);
                 onLand(dataBlock.blockState.getBlock(), blockPosEnd);
@@ -139,7 +130,9 @@ public class EntityBetterFallingBlock extends Entity {
         if (!hasNoGravity()) {
             setVelocity(getVelocity().add(0, -0.04, 0));
         }
-        move(MovementType.SELF, getVelocity());
+        if (timeFalling < tickMove + 1 || tickMove < 0) {
+            move(MovementType.SELF, getVelocity());
+        }
         if (tickMove < 0 && !world.isClient) {
             BlockHitResult blockHitResult;
             BlockPos blockPos = DataFallingBlock.floorPos(getPos());

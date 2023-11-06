@@ -8,7 +8,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.CommandException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.argument.*;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
@@ -21,6 +21,9 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class FallingBlockCommand {
+
+    private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("command.commandfallingblock.fallingblock.failedToCalculate"));
+
     /*
     fallingblock moveFromPos <posStart> <motion> <hasGravity> <block> [age]
     fallingblock moveFromBlockPos <posStart> <motion> <hasGravity> <block> [age]
@@ -110,9 +113,9 @@ public class FallingBlockCommand {
         }));
     }
 
-    private static void checkAndRun(CommandContext<ServerCommandSource> context, DataFallingBlock dataFallingBlock) {
+    private static void checkAndRun(CommandContext<ServerCommandSource> context, DataFallingBlock dataFallingBlock) throws CommandSyntaxException {
         if (dataFallingBlock == null) {
-            throw new CommandException(new TranslatableText("command.commandfallingblock.fallingblock.failedToCalculate"));
+            throw FAILED_EXCEPTION.create();
         } else {
             dataFallingBlock.run(context.getSource().getWorld());
         }

@@ -70,7 +70,7 @@ public class DataBlock {
                 blockEntity.setLocation(null, blockPos);
                 blockEntity.fromTag(blockState, nbtCompound);
             } catch (Exception e) {
-                LOGGER.warn("Failed to load block entity from falling block", e);
+                LOGGER.warn("Failed to load block entity", e);
                 packetByteBuf.writeBoolean(false);
                 return;
             }
