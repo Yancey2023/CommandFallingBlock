@@ -1,22 +1,18 @@
 package yancey.commandfallingblock.data;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldEvents;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class DataBlock {
 
-    private static final Logger LOGGER = LogUtils.getLogger();
-    public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
+    private static final Logger LOGGER = LogManager.getLogger();
     public final BlockState blockState;
     public final NbtCompound nbtCompound;
 
@@ -26,7 +22,7 @@ public class DataBlock {
     }
 
     public DataBlock(NbtCompound nbtCompound) {
-        blockState = NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState"));
+        blockState = NbtHelper.toBlockState(nbtCompound.getCompound("BlockState"));
         if (nbtCompound.contains("Compound")) {
             this.nbtCompound = nbtCompound.getCompound("Compound");
         } else {
@@ -65,13 +61,14 @@ public class DataBlock {
             return;
         }
         if (nbtCompound != null && blockState.getBlock() instanceof BlockEntityProvider blockEntityProvider) {
-            BlockEntity blockEntity = blockEntityProvider.createBlockEntity(blockPos, blockState);
+            BlockEntity blockEntity = blockEntityProvider.createBlockEntity(null);
             if (blockEntity == null) {
                 packetByteBuf.writeBoolean(false);
                 return;
             }
             try {
-                blockEntity.readNbt(nbtCompound);
+                blockEntity.setLocation(null, blockPos);
+                blockEntity.fromTag(blockState, nbtCompound);
             } catch (Exception e) {
                 LOGGER.warn("Failed to load block entity from falling block", e);
                 packetByteBuf.writeBoolean(false);
@@ -96,7 +93,7 @@ public class DataBlock {
         BlockState blockStatePre = world.getBlockState(blockPos);
         if (!blockStatePre.isAir()) {
             if (isDestroy && !(blockState.getBlock() instanceof AbstractFireBlock)) {
-                world.syncWorldEvent(WorldEvents.BLOCK_BROKEN, blockPos, Block.getRawIdFromState(blockStatePre));
+                world.syncWorldEvent(2001, blockPos, Block.getRawIdFromState(blockStatePre));
             }
             if (isDropItem) {
                 Block.dropStacks(blockStatePre, world, blockPos, world.getBlockEntity(blockPos));
@@ -110,9 +107,10 @@ public class DataBlock {
             return;
         }
         try {
-            blockEntity.readNbt(nbtCompound);
+            blockEntity.setLocation(world, blockPos);
+            blockEntity.fromTag(blockState, nbtCompound);
         } catch (Exception e) {
-            LOGGER.warn("Failed to load block entity from falling block", e);
+            LOGGER.warn("Failed to load block entity", e);
         }
         blockEntity.markDirty();
     }

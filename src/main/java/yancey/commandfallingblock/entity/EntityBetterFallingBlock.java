@@ -1,30 +1,29 @@
 package yancey.commandfallingblock.entity;
 
-import com.mojang.logging.LogUtils;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.*;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.network.Packet;
+import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.tag.FluidTags;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
-import org.slf4j.Logger;
 import yancey.commandfallingblock.CommandFallingBlock;
 import yancey.commandfallingblock.data.DataBlock;
 import yancey.commandfallingblock.data.DataFallingBlock;
@@ -34,12 +33,10 @@ import yancey.commandfallingblock.network.SummonFallingBlockPacket;
 public class EntityBetterFallingBlock extends Entity {
 
     public static final EntityType<EntityBetterFallingBlock> BETTER_FALLING_BLOCK = Registry.register(
-            Registries.ENTITY_TYPE,
+            Registry.ENTITY_TYPE,
             new Identifier(CommandFallingBlock.MOD_ID, "better_falling_block"),
             FabricEntityTypeBuilder.create(SpawnGroup.MISC, (EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new).dimensions(EntityDimensions.fixed(0.98f, 0.98f)).trackRangeChunks(10).trackedUpdateRate(20).build()
     );
-
-    private static final Logger LOGGER = LogUtils.getLogger();
 
     public BlockPos blockPosEnd;
     public DataBlock dataBlock;
@@ -56,8 +53,8 @@ public class EntityBetterFallingBlock extends Entity {
     public EntityBetterFallingBlock(World world, BlockPos blockPosEnd, Vec3d pos, Vec3d motion, DataBlock dataBlock, boolean hasNoGravity, int tickMove, int age) {
         super(BETTER_FALLING_BLOCK, world);
         this.dataBlock = dataBlock;
-        intersectionChecked = true;
-        setPos(pos.x, pos.y, pos.z);
+        inanimate = true;
+        setPosition(pos.x, pos.y, pos.z);
         setVelocity(motion);
         prevX = pos.x;
         prevY = pos.y;
@@ -90,8 +87,8 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     @Override
-    protected MoveEffect getMoveEffect() {
-        return MoveEffect.NONE;
+    protected boolean canClimb() {
+        return false;
     }
 
     @Override
@@ -100,27 +97,33 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     @Override
-    public boolean canHit() {
-        return !this.isRemoved();
+    public boolean collides() {
+        return !this.removed;
     }
 
     @Override
     public void tick() {
+        if(timeFalling >= tickMove + 1){
+            if(world.isClient){
+                LOGGER.warn("Client : " + getPos());
+            }else{
+                LOGGER.warn("Server : " + getPos());
+            }
+        }
         if (prepareDied == 0) {
-            discard();
+            remove();
             return;
         } else if (prepareDied > 0) {
             prepareDied--;
             return;
         }
         if (dataBlock.blockState.isAir()) {
-            discard();
+            remove();
             return;
         }
-        World world = getWorld();
         timeFalling++;
         if (!world.isClient && timeFalling >= age && age >= 0) {
-            discard();
+            remove();
             return;
         }
         if (timeFalling >= tickMove + 1 && tickMove >= 0) {
@@ -159,15 +162,16 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     public void onLand(Block block, BlockPos pos) {
-        if (block instanceof LandingBlock landingBlock) {
-            landingBlock.onLanding(getWorld(), pos, dataBlock.blockState, getWorld().getBlockState(getBlockPos()), getFallingBlockEntity());
+        if (block instanceof FallingBlock landingBlock) {
+            landingBlock.onLanding(world, pos, dataBlock.blockState, world.getBlockState(getBlockPos()), getFallingBlockEntity());
         }
     }
 
     public FallingBlockEntity getFallingBlockEntity() {
-        FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, getWorld());
+        FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, world);
         ((FallingBlockEntityAccessor) entity).setBlock(dataBlock.blockState);
-        entity.setPosition(getPos());
+        Vec3d pos = getPos();
+        entity.setPosition(pos.x, pos.y, pos.z);
         entity.setSilent(isSilent());
         entity.setFallingBlockPos(getFallingBlockPos());
         entity.setVelocity(getVelocity());
@@ -180,7 +184,7 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     @Override
-    public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
+    public boolean handleFallDamage(float fallDistance, float damageMultiplier) {
         return false;
     }
 
@@ -207,9 +211,10 @@ public class EntityBetterFallingBlock extends Entity {
         }
         Block block = dataBlock.blockState.getBlock();
         if (block instanceof BlockEntityProvider) {
-            blockEntity = ((BlockEntityProvider) block).createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
+            blockEntity = ((BlockEntityProvider) block).createBlockEntity(world);
             if (dataBlock.nbtCompound != null && blockEntity != null) {
-                blockEntity.readNbt(dataBlock.nbtCompound);
+                blockEntity.setLocation(world, getFallingBlockPos());
+                blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
             }
         }
     }
@@ -227,7 +232,7 @@ public class EntityBetterFallingBlock extends Entity {
 
     @Override
     protected Text getDefaultName() {
-        return Text.translatable("entity.commandfallingblock.better_falling_block_type", dataBlock.blockState.getBlock().getName());
+        return new TranslatableText("entity.commandfallingblock.better_falling_block_type", dataBlock.blockState.getBlock().getName());
     }
 
     @Override
@@ -235,17 +240,25 @@ public class EntityBetterFallingBlock extends Entity {
         return true;
     }
 
+    /**
+     * @deprecated 这个方法获取的是原版的掉落方块的包，我已经拦截，所以这个方法不会被调用
+     */
+    @Override
+    public Packet<?> createSpawnPacket() {
+        return new EntitySpawnS2CPacket(this, Block.getRawIdFromState(dataBlock.blockState));
+    }
+
     public void onSpawnPacket(SummonFallingBlockPacket packet) {
-        getTrackedPosition().setPos(packet.pos);
+        updateTrackedPosition(packet.pos);
         refreshPositionAfterTeleport(packet.pos);
-        setPosition(packet.pos);
-        setId(packet.id);
+        setPosition(packet.pos.x, packet.pos.y, packet.pos.z);
+        setEntityId(packet.id);
         setUuid(packet.uuid);
         setVelocity(packet.velocity);
         dataBlock = packet.dataBlock;
         tickMove = packet.tickMove;
         age = -1;
-        intersectionChecked = true;
+        inanimate = true;
         setFallingBlockPos(packet.blockPosEnd);
         setNoGravity(packet.hasNoGravity);
         if (tickMove >= 0) {
@@ -255,13 +268,10 @@ public class EntityBetterFallingBlock extends Entity {
                 dataBlock.blockState.getRenderType() != BlockRenderType.MODEL &&
                 dataBlock.blockState.getBlock() instanceof BlockEntityProvider blockEntityProvider
         ) {
-            blockEntity = blockEntityProvider.createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
+            blockEntity = blockEntityProvider.createBlockEntity(world);
             if (blockEntity != null) {
-                try {
-                    blockEntity.readNbt(dataBlock.nbtCompound);
-                } catch (Exception e) {
-                    LOGGER.warn("Failed to load block entity from falling block", e);
-                }
+                blockEntity.setLocation(world, getFallingBlockPos());
+                blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
             }
         }
     }

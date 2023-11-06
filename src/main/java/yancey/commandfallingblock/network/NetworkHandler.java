@@ -1,6 +1,5 @@
 package yancey.commandfallingblock.network;
 
-import com.mojang.logging.LogUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -10,14 +9,15 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import yancey.commandfallingblock.CommandFallingBlock;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
 public class NetworkHandler {
 
     private static final Identifier ID_SUMMON_FALLING_BLOCK = new Identifier(CommandFallingBlock.MOD_ID, "summon_falling_block");
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
 
     @Environment(EnvType.CLIENT)
     public static void initClient() {
@@ -28,7 +28,7 @@ public class NetworkHandler {
                 EntityBetterFallingBlock entity = EntityBetterFallingBlock.BETTER_FALLING_BLOCK.create(world);
                 if (entity != null) {
                     entity.onSpawnPacket(packet);
-                    world.addEntity(entity);
+                    world.addEntity(packet.id, entity);
                 } else {
                     LOGGER.warn("Skipping Entity with id {}", EntityBetterFallingBlock.BETTER_FALLING_BLOCK);
                 }

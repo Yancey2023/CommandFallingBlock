@@ -89,14 +89,14 @@ public record DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d 
                     posEnd.z - motionStart.z * a
             );
         } else {
-            if(motionStart.y != 0){
+            if (motionStart.y != 0) {
                 tick = (int) (yMove / motionStart.y);
-                if(tick < 0){
+                if (tick < 0) {
                     return null;
                 }
-            }else if(yMove == 0){
+            } else if (yMove == 0) {
                 tick = 0;
-            }else{
+            } else {
                 return null;
             }
             posStart = new Vec3d(
