@@ -4,43 +4,47 @@
 
 ## 简介
 
-CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来实现方便地生成掉落方块，目前只兼容我的世界1.20.1。
+CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来实现方便地生成掉落方块。
+
+游戏版本：`1.16.5`, `1.20.1`, `1.20.2`
+
+support minecraft versions: 1.16.5, 1.20.1, 1.20.2
 
 ## 模组怎么用
 
 #### 指令
 
 - `fallingblock moveFromPos <posStart> <motion> <hasGravity> <block> [age]`  
-`fallingblock moveFromBlockPos <posStart> <motion> <hasGravity> <block> [age]`  
-类似于原版掉落方块的效果，碰到障碍物会停止，并且控制初速度和是否受重力影响
+  `fallingblock moveFromBlockPos <posStart> <motion> <hasGravity> <block> [age]`  
+  类似于原版掉落方块的效果，碰到障碍物会停止，并且控制初速度和是否受重力影响
 
 
 - `fallingblock moveFromPosByTick <posStart> <motion> <hasGravity> <tickMove> <block> [age]`  
-`fallingblock moveFromBlockPosByTick <posStart> <motion> <hasGravity> <tickMove> <block> [age]`  
-只运动固定的时间，从某个坐标开始运动，并且控制初速度和是否受重力影响
+  `fallingblock moveFromBlockPosByTick <posStart> <motion> <hasGravity> <tickMove> <block> [age]`  
+  只运动固定的时间，从某个坐标开始运动，并且控制初速度和是否受重力影响
 
 
 - `fallingblock moveToPosByTick <posEnd> <motion> <hasGravity> <tickMove> <block> [age]`  
-`fallingblock moveToBlockPosByTick <posEnd> <motion> <hasGravity> <tickMove> <block> [age]`  
-只运动固定的时间，运动到某个坐标，并且控制初速度和是否受重力影响
+  `fallingblock moveToBlockPosByTick <posEnd> <motion> <hasGravity> <tickMove> <block> [age]`  
+  只运动固定的时间，运动到某个坐标，并且控制初速度和是否受重力影响
 
 
 - `fallingblock moveToPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block> [age]`  
-`fallingblock moveToBlockPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block> [age]`  
-运动到某个坐标，并且控制y轴移动的距离，并且控制初速度和是否受重力影响  
-(受重力影响时y轴移动距离有偏差)
+  `fallingblock moveToBlockPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block> [age]`  
+  运动到某个坐标，并且控制y轴移动的距离，并且控制初速度和是否受重力影响  
+  (受重力影响时y轴移动距离有偏差)
 
 
 - `fallingblock moveFromPosToPosByMotionY <posStart> <posEnd> <motionY> <block> [age]`  
-`fallingblock moveFromBlockPosToBlockPosByMotionY <posStart> <posEnd> <motionY> <block> [age]`  
-从某个坐标运动到某个坐标，并且控制y轴初速度，一定受重力影响  
-(受重力影响时初始位置有偏差)
+  `fallingblock moveFromBlockPosToBlockPosByMotionY <posStart> <posEnd> <motionY> <block> [age]`  
+  从某个坐标运动到某个坐标，并且控制y轴初速度，一定受重力影响  
+  (受重力影响时初始位置有偏差)
 
 
 - `fallingblock moveFromPosToPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]`  
-`fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]`  
-只运动固定的时间，从某个坐标运动到某个坐标，并且控制y轴初速度，并且控制初速度和是否受重力影响  
-(受重力影响时初始位置有偏差)
+  `fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]`  
+  只运动固定的时间，从某个坐标运动到某个坐标，并且控制y轴初速度，并且控制初速度和是否受重力影响  
+  (受重力影响时初始位置有偏差)
 
 #### 参数解释
 
@@ -79,16 +83,16 @@ Github: https://github.com/Yancey2023/CommandFallingBlock
 ## 你可能关心的问题
 
 - **中间有障碍物怎么办？**  
-该模组的掉落方块不需要考虑碰撞箱对掉落方块的影响，毕竟可以穿墙的掉落方块谁不爱？
+  该模组的掉落方块不需要考虑碰撞箱对掉落方块的影响，毕竟可以穿墙的掉落方块谁不爱？
 
 
 - **目的地下面是不是实体方块怎么办？**  
-到达目的地时没有接触地面？只接直接原地变成方块
+  到达目的地时没有接触地面？只接直接原地变成方块
 
 
 - **这个模组的掉落方块会和原版或其他模组冲突吗？**  
-为了避免这个问题，我并没有使用原版的掉落方块，而是自己加了一个实体
+  为了避免这个问题，我并没有使用原版的掉落方块，而是自己加了一个实体
 
 
 - **掉落方块会不会很卡**  
-如果输入的是目的地，就要通过模拟路径获得出发的位置，性能理论上会比直接使用summon指令要差，但是经过测试其实一点也不卡
+  如果输入的是目的地，就要通过模拟路径获得出发的位置，性能理论上会比直接使用summon指令要差，但是经过测试其实一点也不卡

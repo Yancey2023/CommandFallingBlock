@@ -1,42 +1,46 @@
 English | [简体中文](README_CN.md)
+
 # CommandFallingBlock
 
 ## Description
 
-CommandFallingBlock, a fabric mod in minecraft 1.20.1, adds `fallingblock` command to summon falling block conveniently.
+CommandFallingBlock, a fabric mod in minecraft, adds `fallingblock` command to summon falling block conveniently.
+
+supported minecraft versions: `1.16.5`, `1.20.1`, `1.20.2`
 
 ## How to use
 
 #### commands
 
 - `fallingblock moveFromPos <posStart> <motion> <hasGravity> <block> [age]`  
-`fallingblock moveFromBlockPos <posStart> <motion> <hasGravity> <block> [age]`  
-like the vanilla, move from a position
+  `fallingblock moveFromBlockPos <posStart> <motion> <hasGravity> <block> [age]`  
+  like the vanilla, move from a position
 
 
 - `fallingblock moveFromPosByTick <posStart> <motion> <hasGravity> <tickMove> <block> [age]`  
-`fallingblock moveFromBlockPosByTick <posStart> <motion> <hasGravity> <tickMove> <block> [age]`  
-move from a position, you can control how many ticks it becomes a block
+  `fallingblock moveFromBlockPosByTick <posStart> <motion> <hasGravity> <tickMove> <block> [age]`  
+  move from a position, you can control how many ticks it becomes a block
 
 
 - `fallingblock moveToPosByTick <posEnd> <motion> <hasGravity> <tickMove> <block> [age]`  
-`fallingblock moveToBlockPosByTick <posEnd> <motion> <hasGravity> <tickMove> <block> [age]`  
-move to a position, you can control how many ticks it becomes a block
+  `fallingblock moveToBlockPosByTick <posEnd> <motion> <hasGravity> <tickMove> <block> [age]`  
+  move to a position, you can control how many ticks it becomes a block
 
 
 - `fallingblock moveToPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block> [age]`  
-`fallingblock moveToBlockPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block> [age]`  
-move to a position, you can control the y-axis movement distance, which is biased when it has gravity
+  `fallingblock moveToBlockPosByYMove <posEnd> <motion> <yMove> <hasGravity> <block> [age]`  
+  move to a position, you can control the y-axis movement distance, which is biased when it has gravity
 
 
 - `fallingblock moveFromPosToPosByMotionY <posStart> <posEnd> <motionY> <block> [age]`  
-`fallingblock moveFromBlockPosToBlockPosByMotionY <posStart> <posEnd> <motionY> <block> [age]`  
-move from a position, you can control the y-axis initial speed, it must have gravity, the initial position is biased
+  `fallingblock moveFromBlockPosToBlockPosByMotionY <posStart> <posEnd> <motionY> <block> [age]`  
+  move from a position, you can control the y-axis initial speed, it must have gravity, the initial position is biased
 
 
 - `fallingblock moveFromPosToPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]`  
-`fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]`  
-  move from a position to another position, you can control how many ticks it becomes a block, it must have gravity, the initial position is biased
+  `fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]`  
+  move from a position to another position, you can control how many ticks it becomes a block, it must have gravity, the
+  initial position is biased
 
 #### param
 
@@ -75,16 +79,17 @@ Github: https://github.com/Yancey2023/CommandFallingBlock
 ## FAQ
 
 - **What about if it crashes an obstacle?**  
-It will pass through obstacles directly. You don't need to worry about it.
+  It will pass through obstacles directly. You don't need to worry about it.
 
 
 - **What about if the destination is not on the ground?**  
-It will also become block.
+  It will also become block.
 
 
 - **Will the falling block of this mod conflict with the vanilla or other mods?**  
-To avoid it, I add an entity type for the falling block of this mod
+  To avoid it, I add an entity type for the falling block of this mod
 
 
 - **Will the performance become worse?**  
-If the input is the destination, the starting position needs to be obtained by simulating the path. Theoretically, the performance will be worse than using the summon command directly, but after testing, it will not cause stuttering
+  If the input is the destination, the starting position needs to be obtained by simulating the path. Theoretically, the
+  performance will be worse than using the summon command directly, but after testing, it will not cause stuttering
