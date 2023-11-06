@@ -73,7 +73,7 @@ public class DataBlock {
             try {
                 blockEntity.readNbt(nbtCompound);
             } catch (Exception e) {
-                LOGGER.warn("Failed to load block entity from falling block", e);
+                LOGGER.warn("Failed to load block entity", e);
                 packetByteBuf.writeBoolean(false);
                 return;
             }
@@ -112,7 +112,7 @@ public class DataBlock {
         try {
             blockEntity.readNbt(nbtCompound);
         } catch (Exception e) {
-            LOGGER.warn("Failed to load block entity from falling block", e);
+            LOGGER.warn("Failed to load block entity", e);
         }
         blockEntity.markDirty();
     }
