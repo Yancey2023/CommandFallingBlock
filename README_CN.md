@@ -4,7 +4,9 @@
 
 ## 简介
 
-CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来实现方便地生成掉落方块，目前只兼容我的世界1.20.1。
+CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来实现方便地生成掉落方块。
+
+游戏版本：`1.16.5`, `1.20.1`, `1.20.2`
 
 ## 模组怎么用
 
@@ -74,7 +76,7 @@ CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来�
 
 作者：Yancey  
 QQ：1709185482  
-Github: https://github.com/Yancey2023/CommandFallingBlock
+GitHub: https://github.com/Yancey2023/CommandFallingBlock
 
 ## 你可能关心的问题
 
@@ -90,5 +92,5 @@ Github: https://github.com/Yancey2023/CommandFallingBlock
   为了避免这个问题，我并没有使用原版的掉落方块，而是自己加了一个实体
 
 
-- **掉落方块会不会很卡**  
+- **掉落方块会不会很卡？**  
   如果输入的是目的地，就要通过模拟路径获得出发的位置，性能理论上会比直接使用summon指令要差，但是经过测试其实一点也不卡

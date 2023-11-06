@@ -4,7 +4,9 @@ English | [简体中文](README_CN.md)
 
 ## Description
 
-CommandFallingBlock, a fabric mod in minecraft 1.20.1, adds `fallingblock` command to summon falling block conveniently.
+CommandFallingBlock, a fabric mod in minecraft, adds `fallingblock` command to summon falling block conveniently.
+
+supported minecraft versions: `1.16.5`, `1.20.1`, `1.20.2`
 
 ## How to use
 
@@ -72,7 +74,7 @@ CommandFallingBlock, a fabric mod in minecraft 1.20.1, adds `fallingblock` comma
 
 Author：Yancey  
 QQ：1709185482  
-Github: https://github.com/Yancey2023/CommandFallingBlock
+GitHub: https://github.com/Yancey2023/CommandFallingBlock
 
 ## FAQ
 
@@ -85,9 +87,9 @@ Github: https://github.com/Yancey2023/CommandFallingBlock
 
 
 - **Will the falling block of this mod conflict with the vanilla or other mods?**  
-  To avoid it, I add an entity type for the falling block of this mod
+  To avoid it, I add an entity type for the falling block of this mod.
 
 
 - **Will the performance become worse?**  
   If the input is the destination, the starting position needs to be obtained by simulating the path. Theoretically, the
-  performance will be worse than using the summon command directly, but after testing, it will not cause stuttering
+  performance will be worse than using the summon command directly, but after testing, it will not cause stuttering.
