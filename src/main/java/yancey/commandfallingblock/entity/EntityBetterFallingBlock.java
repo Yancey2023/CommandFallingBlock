@@ -155,8 +155,8 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     public void onLand(Block block, BlockPos pos) {
-        if (block instanceof FallingBlock landingBlock) {
-            landingBlock.onLanding(world, pos, dataBlock.blockState, world.getBlockState(getBlockPos()), getFallingBlockEntity());
+        if (block instanceof FallingBlock) {
+            ((FallingBlock) block).onLanding(world, pos, dataBlock.blockState, world.getBlockState(getBlockPos()), getFallingBlockEntity());
         }
     }
 
@@ -258,13 +258,15 @@ public class EntityBetterFallingBlock extends Entity {
             noClip = true;
         }
         if (dataBlock.nbtCompound != null &&
-                dataBlock.blockState.getRenderType() != BlockRenderType.MODEL &&
-                dataBlock.blockState.getBlock() instanceof BlockEntityProvider blockEntityProvider
+                dataBlock.blockState.getRenderType() != BlockRenderType.MODEL
         ) {
-            blockEntity = blockEntityProvider.createBlockEntity(world);
-            if (blockEntity != null) {
-                blockEntity.setLocation(world, getFallingBlockPos());
-                blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
+            Block block = dataBlock.blockState.getBlock();
+            if (block instanceof BlockEntityProvider) {
+                blockEntity = ((BlockEntityProvider) block).createBlockEntity(world);
+                if (blockEntity != null) {
+                    blockEntity.setLocation(world, getFallingBlockPos());
+                    blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
+                }
             }
         }
     }

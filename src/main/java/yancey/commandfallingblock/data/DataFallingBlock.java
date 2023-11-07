@@ -6,8 +6,23 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
-public record DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d pos, Vec3d motion, boolean hasGravity,
-                               int tickMove, int age) {
+public class DataFallingBlock {
+
+    private final BlockPos blockPosEnd;
+    private final DataBlock dataBlock;
+    private final Vec3d pos, motion;
+    private final boolean hasGravity;
+    private final int tickMove, age;
+
+    public DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d pos, Vec3d motion, boolean hasGravity, int tickMove, int age) {
+        this.blockPosEnd = blockPosEnd;
+        this.dataBlock = dataBlock;
+        this.pos = pos;
+        this.motion = motion;
+        this.hasGravity = hasGravity;
+        this.tickMove = tickMove;
+        this.age = age;
+    }
 
     public static DataFallingBlock moveFromPosByTick(DataBlock dataBlock, Vec3d posStart, Vec3d motionStart, boolean hasGravity, int tickMove, int age) {
         double x = posStart.x;

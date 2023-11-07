@@ -60,28 +60,31 @@ public class DataBlock {
         if (blockState.getRenderType() == BlockRenderType.MODEL) {
             return;
         }
-        if (nbtCompound != null && blockState.getBlock() instanceof BlockEntityProvider blockEntityProvider) {
-            BlockEntity blockEntity = blockEntityProvider.createBlockEntity(null);
-            if (blockEntity == null) {
-                packetByteBuf.writeBoolean(false);
+        if (nbtCompound != null) {
+            Block block = blockState.getBlock();
+            if (block instanceof BlockEntityProvider) {
+                BlockEntity blockEntity = ((BlockEntityProvider) block).createBlockEntity(null);
+                if (blockEntity == null) {
+                    packetByteBuf.writeBoolean(false);
+                    return;
+                }
+                try {
+                    blockEntity.setLocation(null, blockPos);
+                    blockEntity.fromTag(blockState, nbtCompound);
+                } catch (Exception e) {
+                    LOGGER.warn("Failed to load block entity", e);
+                    packetByteBuf.writeBoolean(false);
+                    return;
+                }
+                NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt();
+                if (initialChunkDataNbt == null) {
+                    packetByteBuf.writeBoolean(false);
+                    return;
+                }
+                packetByteBuf.writeBoolean(true);
+                packetByteBuf.writeNbt(initialChunkDataNbt);
                 return;
             }
-            try {
-                blockEntity.setLocation(null, blockPos);
-                blockEntity.fromTag(blockState, nbtCompound);
-            } catch (Exception e) {
-                LOGGER.warn("Failed to load block entity", e);
-                packetByteBuf.writeBoolean(false);
-                return;
-            }
-            NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt();
-            if (initialChunkDataNbt == null) {
-                packetByteBuf.writeBoolean(false);
-                return;
-            }
-            packetByteBuf.writeBoolean(true);
-            packetByteBuf.writeNbt(initialChunkDataNbt);
-            return;
         }
         packetByteBuf.writeBoolean(false);
     }
