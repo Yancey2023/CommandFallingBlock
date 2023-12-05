@@ -27,4 +27,11 @@ public abstract class EntityTrackerEntryMixin {
         }
     }
 
+    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
+    public void modifyTick(CallbackInfo ci) {
+        if (entity instanceof EntityBetterFallingBlock) {
+            ci.cancel();
+        }
+    }
+
 }
