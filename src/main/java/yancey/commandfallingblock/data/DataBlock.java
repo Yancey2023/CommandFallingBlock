@@ -62,15 +62,14 @@ public class DataBlock {
         }
         if (nbtCompound != null) {
             Block block = blockState.getBlock();
-            if (block instanceof BlockEntityProvider) {
-                BlockEntity blockEntity = ((BlockEntityProvider) block).createBlockEntity(null);
+            if (block instanceof BlockEntityProvider blockEntityProvider) {
+                BlockEntity blockEntity = blockEntityProvider.createBlockEntity(blockPos, blockState);
                 if (blockEntity == null) {
                     packetByteBuf.writeBoolean(false);
                     return;
                 }
                 try {
-                    blockEntity.setLocation(null, blockPos);
-                    blockEntity.fromTag(blockState, nbtCompound);
+                    blockEntity.readNbt(nbtCompound);
                 } catch (Exception e) {
                     LOGGER.warn("Failed to load block entity", e);
                     packetByteBuf.writeBoolean(false);
@@ -110,8 +109,7 @@ public class DataBlock {
             return;
         }
         try {
-            blockEntity.setLocation(world, blockPos);
-            blockEntity.fromTag(blockState, nbtCompound);
+            blockEntity.readNbt(nbtCompound);
         } catch (Exception e) {
             LOGGER.warn("Failed to load block entity", e);
         }

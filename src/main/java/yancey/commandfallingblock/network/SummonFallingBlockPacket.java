@@ -20,7 +20,7 @@ public class SummonFallingBlockPacket {
     public final BlockPos blockPosEnd;
 
     public SummonFallingBlockPacket(EntityBetterFallingBlock entity) {
-        this(entity.getEntityId(), entity.getUuid(), entity.getPos(), entity.getVelocity(), entity.dataBlock, entity.hasNoGravity(), entity.tickMove, entity.blockPosEnd);
+        this(entity.getId(), entity.getUuid(), entity.getPos(), entity.getVelocity(), entity.dataBlock, entity.hasNoGravity(), entity.tickMove, entity.blockPosEnd);
     }
 
     public SummonFallingBlockPacket(int id, UUID uuid, Vec3d pos, Vec3d velocity, DataBlock dataBlock, boolean hasNoGravity, int tickMove, BlockPos blockPosEnd) {
