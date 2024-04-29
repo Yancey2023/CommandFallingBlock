@@ -6,7 +6,7 @@ English | [简体中文](README_CN.md)
 
 CommandFallingBlock, a fabric mod in minecraft, adds `fallingblock` command to summon falling block conveniently.
 
-supported minecraft versions: `1.16.5`, `1.18.2`, `1.20.1`, `1.20.2`, `1.20.4`
+supported minecraft versions: `1.16.5`, `1.20.1`, `1.20.2`, `1.20.4`, `1.20.5`
 
 ## How to use
 
@@ -70,17 +70,11 @@ supported minecraft versions: `1.16.5`, `1.18.2`, `1.20.1`, `1.20.2`, `1.20.4`
 
 - `age` - max tick it can live
 
-### Example
-
-```mcfunction
-fallingblock moveFromBlockPosByTick ~ ~1 ~ 0.3 0.3 0.3 true 20 minecraft:oak_log[axis=z]
-```
-
 ## About
 
 Author：Yancey  
 QQ：1709185482  
-GitHub: https://github.com/Yancey2023/CommandFallingBlock
+Github: https://github.com/Yancey2023/CommandFallingBlock
 
 ## FAQ
 
@@ -99,16 +93,3 @@ GitHub: https://github.com/Yancey2023/CommandFallingBlock
 - **Will the performance become worse?**  
   If the input is the destination, the starting position needs to be obtained by simulating the path. Theoretically, the
   performance will be worse than using the summon command directly, but after testing, it will not cause stuttering
-
-## More feature
-
-The following is all about the falling block summoned by `fallingblock` command, rather than the vanilla falling block.
-
-- It can render blocks rendering by entity render, such as chests.
-
-
-- It will not send NBT that are not used for rendering to client.
-  For example, the text NBT in signs will send and the item NBT in chests will not send.
-
-
-- When reaching its destination and needing to set block , it will be killed after 2 ticks to prevent flickering.
