@@ -1,7 +1,6 @@
 package yancey.commandfallingblock.entity;
 
 import com.mojang.logging.LogUtils;
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.*;
@@ -29,14 +28,14 @@ import yancey.commandfallingblock.CommandFallingBlock;
 import yancey.commandfallingblock.data.DataBlock;
 import yancey.commandfallingblock.data.DataFallingBlock;
 import yancey.commandfallingblock.mixin.FallingBlockEntityAccessor;
-import yancey.commandfallingblock.network.SummonFallingBlockPacket;
+import yancey.commandfallingblock.network.SummonFallingBlockPayloadS2C;
 
 public class EntityBetterFallingBlock extends Entity {
 
     public static final EntityType<EntityBetterFallingBlock> BETTER_FALLING_BLOCK = Registry.register(
             Registries.ENTITY_TYPE,
             new Identifier(CommandFallingBlock.MOD_ID, "better_falling_block"),
-            FabricEntityTypeBuilder.create(SpawnGroup.MISC, (EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new).dimensions(EntityDimensions.fixed(0.98f, 0.98f)).trackRangeChunks(10).trackedUpdateRate(20).build()
+            EntityType.Builder.create((EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new, SpawnGroup.MISC).dimensions(0.98f, 0.98f).maxTrackingRange(10).trackingTickInterval(20).build()
     );
 
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -47,7 +46,7 @@ public class EntityBetterFallingBlock extends Entity {
     public int tickMove, age;
     public BlockEntity blockEntity = null;
     private int prepareDied = -1;
-    protected static final TrackedData<BlockPos> BLOCK_POS = DataTracker.registerData(EntityBetterFallingBlock.class, TrackedDataHandlerRegistry.BLOCK_POS);
+    private static final TrackedData<BlockPos> BLOCK_POS = DataTracker.registerData(EntityBetterFallingBlock.class, TrackedDataHandlerRegistry.BLOCK_POS);
 
     public EntityBetterFallingBlock(EntityType<EntityBetterFallingBlock> entityEntityType, World world) {
         super(entityEntityType, world);
@@ -95,8 +94,8 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     @Override
-    protected void initDataTracker() {
-        this.dataTracker.startTracking(BLOCK_POS, BlockPos.ORIGIN);
+    protected void initDataTracker(DataTracker.Builder builder) {
+        builder.add(BLOCK_POS, BlockPos.ORIGIN);
     }
 
     @Override
@@ -164,6 +163,7 @@ public class EntityBetterFallingBlock extends Entity {
         }
     }
 
+    @SuppressWarnings("UnreachableCode")
     public FallingBlockEntity getFallingBlockEntity() {
         FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, getWorld());
         ((FallingBlockEntityAccessor) entity).setBlock(dataBlock.blockState);
@@ -201,7 +201,7 @@ public class EntityBetterFallingBlock extends Entity {
         tickMove = nbtCompound.getInt("TickMove");
         age = nbtCompound.getInt("Age");
         prepareDied = nbtCompound.getInt("PrepareDied");
-        setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound.getCompound("BlockPosEnd")));
+        setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound, "BlockPosEnd").orElse(BlockPos.ORIGIN));
         if (tickMove >= 0) {
             noClip = true;
         }
@@ -209,7 +209,7 @@ public class EntityBetterFallingBlock extends Entity {
         if (block instanceof BlockEntityProvider) {
             blockEntity = ((BlockEntityProvider) block).createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
             if (dataBlock.nbtCompound != null && blockEntity != null) {
-                blockEntity.readNbt(dataBlock.nbtCompound);
+                blockEntity.read(dataBlock.nbtCompound, getWorld().getRegistryManager());
             }
         }
     }
@@ -220,12 +220,14 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     @Override
+    @SuppressWarnings("SpellCheckingInspection")
     public void populateCrashReport(CrashReportSection section) {
         super.populateCrashReport(section);
         section.add("Immitating BlockState", dataBlock.blockState.toString());
     }
 
     @Override
+    @SuppressWarnings("SpellCheckingInspection")
     protected Text getDefaultName() {
         return Text.translatable("entity.commandfallingblock.better_falling_block_type", dataBlock.blockState.getBlock().getName());
     }
@@ -235,19 +237,19 @@ public class EntityBetterFallingBlock extends Entity {
         return true;
     }
 
-    public void onSpawnPacket(SummonFallingBlockPacket packet) {
-        getTrackedPosition().setPos(packet.pos);
-        refreshPositionAfterTeleport(packet.pos);
-        setPosition(packet.pos);
-        setId(packet.id);
-        setUuid(packet.uuid);
-        setVelocity(packet.velocity);
-        dataBlock = packet.dataBlock;
-        tickMove = packet.tickMove;
+    public void onSpawnPacket(SummonFallingBlockPayloadS2C payload) {
+        getTrackedPosition().setPos(payload.pos());
+        refreshPositionAfterTeleport(payload.pos());
+        setPosition(payload.pos());
+        setId(payload.id());
+        setUuid(payload.uuid());
+        setVelocity(payload.velocity());
+        dataBlock = payload.dataBlock();
+        tickMove = payload.tickMove();
         age = -1;
         intersectionChecked = true;
-        setFallingBlockPos(packet.blockPosEnd);
-        setNoGravity(packet.hasNoGravity);
+        setFallingBlockPos(payload.blockPosEnd());
+        setNoGravity(payload.hasNoGravity());
         if (tickMove >= 0) {
             noClip = true;
         }
@@ -258,7 +260,7 @@ public class EntityBetterFallingBlock extends Entity {
             blockEntity = blockEntityProvider.createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
             if (blockEntity != null) {
                 try {
-                    blockEntity.readNbt(dataBlock.nbtCompound);
+                    blockEntity.read(dataBlock.nbtCompound, getWorld().getRegistryManager());
                 } catch (Exception e) {
                     LOGGER.warn("Failed to load block entity from falling block", e);
                 }

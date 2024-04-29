@@ -23,8 +23,6 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class FallingBlockCommand {
 
-    private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("command.commandfallingblock.fallingblock.failedToCalculate"));
-
     /*
     fallingblock moveFromPos <posStart> <motion> <hasGravity> <block> [age]
     fallingblock moveFromBlockPos <posStart> <motion> <hasGravity> <block> [age]
@@ -39,6 +37,11 @@ public class FallingBlockCommand {
     fallingblock moveFromPosToPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]
     fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]
     */
+
+    @SuppressWarnings("SpellCheckingInspection")
+    private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("command.commandfallingblock.fallingblock.failedToCalculate"));
+
+    @SuppressWarnings("SpellCheckingInspection")
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess) {
         Executor moveFromPos = FallingBlockCommand::moveFromPos;
         Executor moveFromPosByTick = FallingBlockCommand::moveFromPosByTick;
@@ -190,4 +193,5 @@ public class FallingBlockCommand {
     private interface Executor {
         DataFallingBlock execute(CommandContext<ServerCommandSource> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException;
     }
+
 }

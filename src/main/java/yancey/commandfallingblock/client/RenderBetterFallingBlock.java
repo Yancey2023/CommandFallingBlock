@@ -66,6 +66,7 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public Identifier getTexture(EntityBetterFallingBlock entityBetterFallingBlock) {
         return SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE;
     }

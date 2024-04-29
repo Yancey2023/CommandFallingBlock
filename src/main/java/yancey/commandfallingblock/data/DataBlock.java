@@ -59,7 +59,7 @@ public class DataBlock {
      * @param packetByteBuf byte buffer
      * @param blockPos      block position
      */
-    public void writeClientRenderData(PacketByteBuf packetByteBuf, BlockPos blockPos) {
+    public void writeClientRenderData(PacketByteBuf packetByteBuf, BlockPos blockPos, RegistryWrapper.WrapperLookup registryManager) {
         packetByteBuf.writeInt(Block.getRawIdFromState(blockState));
         if (blockState.getRenderType() == BlockRenderType.MODEL) {
             return;
@@ -71,13 +71,13 @@ public class DataBlock {
                 return;
             }
             try {
-                blockEntity.readNbt(nbtCompound);
+                blockEntity.read(nbtCompound, registryManager);
             } catch (Exception e) {
                 LOGGER.warn("Failed to load block entity", e);
                 packetByteBuf.writeBoolean(false);
                 return;
             }
-            NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt();
+            NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt(registryManager);
             if (initialChunkDataNbt == null) {
                 packetByteBuf.writeBoolean(false);
                 return;
@@ -110,7 +110,7 @@ public class DataBlock {
             return;
         }
         try {
-            blockEntity.readNbt(nbtCompound);
+            blockEntity.read(nbtCompound, world.getRegistryManager());
         } catch (Exception e) {
             LOGGER.warn("Failed to load block entity", e);
         }
