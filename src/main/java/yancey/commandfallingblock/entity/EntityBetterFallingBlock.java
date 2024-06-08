@@ -163,7 +163,6 @@ public class EntityBetterFallingBlock extends Entity {
         }
     }
 
-    @SuppressWarnings("UnreachableCode")
     public FallingBlockEntity getFallingBlockEntity() {
         FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, getWorld());
         ((FallingBlockEntityAccessor) entity).setBlock(dataBlock.blockState);
@@ -209,7 +208,7 @@ public class EntityBetterFallingBlock extends Entity {
         if (block instanceof BlockEntityProvider) {
             blockEntity = ((BlockEntityProvider) block).createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
             if (dataBlock.nbtCompound != null && blockEntity != null) {
-                blockEntity.read(dataBlock.nbtCompound, getWorld().getRegistryManager());
+                blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
             }
         }
     }
@@ -260,7 +259,7 @@ public class EntityBetterFallingBlock extends Entity {
             blockEntity = blockEntityProvider.createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
             if (blockEntity != null) {
                 try {
-                    blockEntity.read(dataBlock.nbtCompound, getWorld().getRegistryManager());
+                    blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
                 } catch (Exception e) {
                     LOGGER.warn("Failed to load block entity from falling block", e);
                 }

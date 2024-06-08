@@ -1,5 +1,5 @@
 {
   "entity.commandfallingblock.better_falling_block" :  "Falling Block",
   "entity.commandfallingblock.better_falling_block_type" :  "Falling %s",
-  "command.commandfallingblock.fallingblock.failedToCalculate" :  "failed to calculate,the falling block cannot move to the target position"
+  "command.commandfallingblock.fallingblock.failedToCalculate" :  "failed to calculate, the falling block cannot move to the target position"
 }

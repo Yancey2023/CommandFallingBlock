@@ -1,5 +1,6 @@
 package yancey.commandfallingblock.command;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -110,10 +111,10 @@ public class FallingBlockCommand {
                                                                                                 Executor executor) {
         return argument("block", BlockStateArgumentType.blockState(commandRegistryAccess)).executes(context -> {
             checkAndRun(context, executor.execute(context, isBlockPos, false));
-            return 1;
+            return Command.SINGLE_SUCCESS;
         }).then(argument("age", IntegerArgumentType.integer(-1)).executes(context -> {
             checkAndRun(context, executor.execute(context, isBlockPos, true));
-            return 1;
+            return Command.SINGLE_SUCCESS;
         }));
     }
 
