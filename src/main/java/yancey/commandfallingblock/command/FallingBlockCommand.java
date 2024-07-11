@@ -42,7 +42,6 @@ public class FallingBlockCommand {
     @SuppressWarnings("SpellCheckingInspection")
     private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("command.commandfallingblock.fallingblock.failedToCalculate"));
 
-    @SuppressWarnings("SpellCheckingInspection")
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess) {
         Executor moveFromPos = FallingBlockCommand::moveFromPos;
         Executor moveFromPosByTick = FallingBlockCommand::moveFromPosByTick;

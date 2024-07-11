@@ -17,7 +17,7 @@ public record SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3d pos, Vec3d v
                                            boolean hasNoGravity, int tickMove,
                                            BlockPos blockPosEnd) implements CustomPayload {
 
-    public static final CustomPayload.Id<SummonFallingBlockPayloadS2C> ID = new CustomPayload.Id<>(new Identifier(MOD_ID, "summon_falling_block"));
+    public static final CustomPayload.Id<SummonFallingBlockPayloadS2C> ID = new CustomPayload.Id<>(Identifier.of(MOD_ID, "summon_falling_block"));
     public static final PacketCodec<RegistryByteBuf, SummonFallingBlockPayloadS2C> CODEC = new PacketCodec<>() {
         @Override
         public SummonFallingBlockPayloadS2C decode(RegistryByteBuf buf) {

@@ -34,7 +34,7 @@ public class EntityBetterFallingBlock extends Entity {
 
     public static final EntityType<EntityBetterFallingBlock> BETTER_FALLING_BLOCK = Registry.register(
             Registries.ENTITY_TYPE,
-            new Identifier(CommandFallingBlock.MOD_ID, "better_falling_block"),
+            Identifier.of(CommandFallingBlock.MOD_ID, "better_falling_block"),
             EntityType.Builder.create((EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new, SpawnGroup.MISC).dimensions(0.98f, 0.98f).maxTrackingRange(10).trackingTickInterval(20).build()
     );
 
