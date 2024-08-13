@@ -17,7 +17,9 @@ public record DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d 
         double motionY = motionStart.y;
         double motionZ = motionStart.z;
         for (int i = 0; i < tickMove; i++) {
-            motionY -= 0.04;
+            if (hasGravity) {
+                motionY -= 0.04;
+            }
             x += motionX;
             y += motionY;
             z += motionZ;
