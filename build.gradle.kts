@@ -49,14 +49,18 @@ dependencies {
             fabricApiModules.remove("fabric-networking-v0")
             fabricApiModules.add("fabric-networking-api-v1")
         }
+        if (mcVersion >= 12001) {
+            fabricApiModules.remove("fabric-command-api-v1")
+            fabricApiModules.add("fabric-command-api-v2")
+        }
         if (mcVersion >= 11802) {
             fabricApiModules.remove("fabric-renderer-registries-v1")
             fabricApiModules.add("fabric-rendering-v1")
         }
         if (mcVersion >= 12001) {
-            fabricApiModules.remove("fabric-command-api-v1")
-            fabricApiModules.add("fabric-command-api-v2")
+            fabricApiModules.remove("fabric-object-builder-api-v1")
         }
+
         for (module in fabricApiModules) {
             val dep = fabricApi.module(module, fabricApiVersion)
             modImplementation(dep)

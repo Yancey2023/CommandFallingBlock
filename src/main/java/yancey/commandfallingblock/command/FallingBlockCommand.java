@@ -13,8 +13,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.argument.*;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.math.Vec3d;
-import yancey.commandfallingblock.data.DataBlock;
-import yancey.commandfallingblock.data.DataFallingBlock;
+import yancey.commandfallingblock.util.DataBlock;
+import yancey.commandfallingblock.util.DataFallingBlock;
 import yancey.commandfallingblock.mixin.BlockStateArgumentAccessor;
 
 import static net.minecraft.server.command.CommandManager.argument;

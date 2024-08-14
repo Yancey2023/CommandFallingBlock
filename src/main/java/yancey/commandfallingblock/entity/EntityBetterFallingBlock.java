@@ -20,13 +20,13 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import yancey.commandfallingblock.CommandFallingBlock;
-import yancey.commandfallingblock.data.DataBlock;
-import yancey.commandfallingblock.data.DataFallingBlock;
+import yancey.commandfallingblock.util.DataBlock;
+import yancey.commandfallingblock.util.DataFallingBlock;
 import yancey.commandfallingblock.mixin.FallingBlockEntityAccessor;
 import yancey.commandfallingblock.network.SummonFallingBlockPayloadS2C;
 
 
-//#if MC<12100
+//#if MC<12001
 //$$ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 //#endif
 
@@ -308,27 +308,11 @@ public class EntityBetterFallingBlock extends Entity {
             noClip = true;
         }
         Block block = dataBlock.blockState.getBlock();
-        if (block instanceof BlockEntityProvider) {
-            //#if MC>=11802
-            blockEntity = ((BlockEntityProvider) block).createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
-            //#else
-            //$$ blockEntity = ((BlockEntityProvider) block).createBlockEntity(world);
-            //#endif
-            if (dataBlock.nbtCompound != null && blockEntity != null) {
-                try {
-                    //#if MC>=12005
-                    blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
-                    //#elseif MC>=11802
-                    //$$ blockEntity.readNbt(dataBlock.nbtCompound);
-                    //#else
-                    //$$ blockEntity.setLocation(world, getFallingBlockPos());
-                    //$$ blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
-                    //#endif
-                } catch (Exception e) {
-                    LOGGER.warn("Failed to load block entity from falling block", e);
-                }
-            }
-        }
+        //#if MC>=11802
+        blockEntity = dataBlock.createBlockEntity(getWorld(), getFallingBlockPos());
+        //#else
+        //$$ blockEntity = dataBlock.createBlockEntity(world, getFallingBlockPos());
+        //#endif
     }
 
     @Override
@@ -399,24 +383,10 @@ public class EntityBetterFallingBlock extends Entity {
                 block instanceof BlockEntityProvider
         ) {
             //#if MC>=11802
-            blockEntity = ((BlockEntityProvider) block).createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
+            blockEntity = dataBlock.createBlockEntity(getWorld(), getFallingBlockPos());
             //#else
-            //$$ blockEntity = ((BlockEntityProvider) block).createBlockEntity(world);
+            //$$ blockEntity = dataBlock.createBlockEntity(world, getFallingBlockPos());
             //#endif
-            if (dataBlock.nbtCompound != null && blockEntity != null) {
-                try {
-                    //#if MC>=12005
-                    blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
-                    //#elseif MC>=11802
-                    //$$ blockEntity.readNbt(dataBlock.nbtCompound);
-                    //#else
-                    //$$ blockEntity.setLocation(world, getFallingBlockPos());
-                    //$$ blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
-                    //#endif
-                } catch (Exception e) {
-                    LOGGER.warn("Failed to load block entity from falling block", e);
-                }
-            }
         }
     }
 

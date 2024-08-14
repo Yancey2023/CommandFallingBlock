@@ -1,4 +1,4 @@
-package yancey.commandfallingblock.data;
+package yancey.commandfallingblock.util;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;

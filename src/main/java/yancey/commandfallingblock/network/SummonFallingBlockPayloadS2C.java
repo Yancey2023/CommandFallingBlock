@@ -4,7 +4,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import yancey.commandfallingblock.data.DataBlock;
+import yancey.commandfallingblock.util.DataBlock;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
 import java.util.UUID;
@@ -26,17 +26,8 @@ public class SummonFallingBlockPayloadS2C
 
     //#if MC>=12005
     public static final CustomPayload.Id<SummonFallingBlockPayloadS2C> ID = new CustomPayload.Id<>(Identifier.of(MOD_ID, "summon_falling_block"));
-    public static final PacketCodec<RegistryByteBuf, SummonFallingBlockPayloadS2C> CODEC = new PacketCodec<>() {
-       @Override
-       public SummonFallingBlockPayloadS2C decode(RegistryByteBuf buf) {
-           return SummonFallingBlockPayloadS2C.decode(buf);
-       }
-
-       @Override
-       public void encode(RegistryByteBuf buf, SummonFallingBlockPayloadS2C value) {
-           value.encode(buf);
-       }
-    };
+    public static final PacketCodec<RegistryByteBuf, SummonFallingBlockPayloadS2C> CODEC
+            = PacketCodec.of(SummonFallingBlockPayloadS2C::encode, SummonFallingBlockPayloadS2C::decode);
     //#elseif MC > 12001
     //$$ public static Identifier ID = Identifier.of(MOD_ID, "summon_falling_block");
     //#else

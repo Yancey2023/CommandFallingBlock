@@ -1,4 +1,4 @@
-package yancey.commandfallingblock.data;
+package yancey.commandfallingblock.util;
 
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -7,6 +7,8 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 //#if MC>=12001
 import net.minecraft.registry.Registries;
@@ -102,20 +104,13 @@ public class DataBlock {
                 packetByteBuf.writeBoolean(false);
                 return;
             }
-            try {
-                //#if MC>=12005
-                blockEntity.read(nbtCompound, registryManager);
-                //#elseif MC>=11802
-                //$$ blockEntity.readNbt(nbtCompound);
-                //#else
-                //$$ blockEntity.setLocation(null, blockPos);
-                //$$ blockEntity.fromTag(blockState, nbtCompound);
-                //#endif
-            } catch (Exception e) {
-                LOGGER.warn("Failed to load block entity", e);
-                packetByteBuf.writeBoolean(false);
-                return;
-            }
+            //#if MC>=12005
+            writeNbtToBlockEntity(registryManager, blockEntity);
+            //#elseif MC>=11802
+            //$$ writeNbtToBlockEntity(blockEntity);
+            //#else
+            //$$ writeNbtToBlockEntity(blockPos, blockEntity);
+            //#endif
             //#if MC>=12005
             NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt(registryManager);
             //#else
@@ -156,9 +151,58 @@ public class DataBlock {
         if (blockEntity == null) {
             return;
         }
+        //#if MC>=12005
+        writeNbtToBlockEntity(world.getRegistryManager(), blockEntity);
+        //#elseif MC>=11802
+        //$$ writeNbtToBlockEntity(blockEntity);
+        //#else
+        //$$ writeNbtToBlockEntity(blockPos, blockEntity);
+        //#endif
+        blockEntity.markDirty();
+    }
+
+    public BlockEntity createBlockEntity(
+            World world,
+            BlockPos blockPos) {
+        if (blockState instanceof BlockEntityProvider) {
+
+            //#if MC>=11802
+            BlockEntity blockEntity = ((BlockEntityProvider) blockState).createBlockEntity(blockPos, blockState);
+            //#else
+            //$$ BlockEntity blockEntity = ((BlockEntityProvider) blockState).createBlockEntity(world);
+            //#endif
+
+            if (blockEntity != null) {
+                //#if MC>=12005
+                writeNbtToBlockEntity(world.getRegistryManager(), blockEntity);
+                //#elseif MC>=11802
+                //$$ writeNbtToBlockEntity(blockEntity);
+                //#else
+                //$$ writeNbtToBlockEntity(blockPos, blockEntity);
+                //#endif
+            }
+
+            return blockEntity;
+        } else {
+            return null;
+        }
+    }
+
+    public void writeNbtToBlockEntity(
+            //#if MC>=12005
+            RegistryWrapper.WrapperLookup wrapperLookup,
+            //#endif
+            //#if MC<11802
+            //$$ BlockPos blockPos,
+            //#endif
+            @NotNull BlockEntity blockEntity
+    ) {
+        if (nbtCompound == null) {
+            return;
+        }
         try {
             //#if MC>=12005
-            blockEntity.read(nbtCompound, world.getRegistryManager());
+            blockEntity.read(nbtCompound, wrapperLookup);
             //#elseif MC>=11802
             //$$ blockEntity.readNbt(nbtCompound);
             //#else
@@ -168,7 +212,5 @@ public class DataBlock {
         } catch (Exception e) {
             LOGGER.warn("Failed to load block entity", e);
         }
-        blockEntity.markDirty();
     }
-
 }
