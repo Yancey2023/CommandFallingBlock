@@ -10,8 +10,6 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -30,13 +28,14 @@ import yancey.commandfallingblock.data.DataFallingBlock;
 import yancey.commandfallingblock.mixin.FallingBlockEntityAccessor;
 import yancey.commandfallingblock.network.SummonFallingBlockPayloadS2C;
 
+import java.util.Objects;
+
 public class EntityBetterFallingBlock extends Entity {
 
-    public static final EntityType<EntityBetterFallingBlock> BETTER_FALLING_BLOCK = Registry.register(
-            Registries.ENTITY_TYPE,
-            Identifier.of(CommandFallingBlock.MOD_ID, "better_falling_block"),
-            EntityType.Builder.create((EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new, SpawnGroup.MISC).dimensions(0.98f, 0.98f).maxTrackingRange(10).trackingTickInterval(20).build()
-    );
+    public static final Identifier ID_BETTER_FALLING_BLOCK = Objects.requireNonNull(Identifier.of(CommandFallingBlock.MOD_ID, "better_falling_block"));
+    public static final EntityType<EntityBetterFallingBlock> BETTER_FALLING_BLOCK =
+            EntityType.Builder.create((EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new, SpawnGroup.MISC)
+                    .dimensions(0.98f, 0.98f).maxTrackingRange(10).trackingTickInterval(20).build(ID_BETTER_FALLING_BLOCK.toString());
 
     private static final Logger LOGGER = LogUtils.getLogger();
 

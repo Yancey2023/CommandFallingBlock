@@ -11,21 +11,20 @@ pluginManagement {
     // so you do not have to change the version in multilpe places when updating.
     plugins {
         val egtVersion = "0.6.2" // should be whatever is displayed in above badge
-        id("gg.essential.defaults") version egtVersion
         id("gg.essential.multi-version.root") version egtVersion
         id("gg.essential.multi-version.api-validation") version egtVersion
     }
 }
 
 listOf(
-//    "1.16.5-fabric",
-//    "1.18.2-fabric",
-//    "1.20.1-fabric",
-//    "1.20.2-fabric",
-//    "1.20.3-fabric",
-//    "1.20.4-fabric",
-//    "1.20.5-fabric",
-//    "1.20.6-fabric",
+    "1.16.5-fabric",
+    "1.18.2-fabric",
+    "1.20.1-fabric",
+    "1.20.2-fabric",
+    "1.20.3-fabric",
+    "1.20.4-fabric",
+    "1.20.5-fabric",
+    "1.20.6-fabric",
     "1.21-fabric",
     "1.21.1-fabric",
 ).forEach { version ->
