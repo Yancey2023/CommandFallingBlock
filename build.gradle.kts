@@ -42,11 +42,16 @@ dependencies {
             "fabric-api-base",
             "fabric-networking-v0",
             "fabric-command-api-v1",
-            "fabric-rendering-v1",
+            "fabric-renderer-registries-v1",
+            "fabric-object-builder-api-v1",
         )
         if (mcVersion >= 11604) {
             fabricApiModules.remove("fabric-networking-v0")
             fabricApiModules.add("fabric-networking-api-v1")
+        }
+        if (mcVersion >= 11802) {
+            fabricApiModules.remove("fabric-renderer-registries-v1")
+            fabricApiModules.add("fabric-rendering-v1")
         }
         if (mcVersion >= 12001) {
             fabricApiModules.remove("fabric-command-api-v1")

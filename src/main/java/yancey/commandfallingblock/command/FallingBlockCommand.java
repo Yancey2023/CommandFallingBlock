@@ -10,10 +10,8 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.*;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import yancey.commandfallingblock.data.DataBlock;
 import yancey.commandfallingblock.data.DataFallingBlock;
@@ -21,6 +19,13 @@ import yancey.commandfallingblock.mixin.BlockStateArgumentAccessor;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+
+//#if MC>=12001
+import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.text.Text;
+//#else
+//$$ import net.minecraft.text.TranslatableText;
+//#endif
 
 public class FallingBlockCommand {
 
@@ -40,15 +45,24 @@ public class FallingBlockCommand {
     */
 
     @SuppressWarnings("SpellCheckingInspection")
+    //#if MC>=12001
     private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("command.commandfallingblock.fallingblock.failedToCalculate"));
+    //#else
+    //$$ private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("command.commandfallingblock.fallingblock.failedToCalculate"));
+    //#endif
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess) {
+    public static void register(
+            //#if MC>=12001
+            CommandRegistryAccess commandRegistryAccess,
+            //#endif
+            CommandDispatcher<ServerCommandSource> dispatcher) {
         Executor moveFromPos = FallingBlockCommand::moveFromPos;
         Executor moveFromPosByTick = FallingBlockCommand::moveFromPosByTick;
         Executor moveToPosByTick = FallingBlockCommand::moveToPosByTick;
         Executor moveToPosByYMove = FallingBlockCommand::moveToPosByYMove;
         Executor moveFromPosToPosByMotionY = FallingBlockCommand::moveFromPosToPosByMotionY;
         Executor moveFromPosToPosByTick = FallingBlockCommand::moveFromPosToPosByTick;
+        //#if MC>=12001
         dispatcher.register(literal("fallingblock")
                 .requires(source -> source.hasPermissionLevel(2))
                 .then(add("moveFromPos", posStart(motion(hasGravity(blockAndAge(commandRegistryAccess, false, moveFromPos))))))
@@ -64,6 +78,23 @@ public class FallingBlockCommand {
                 .then(add("moveFromPosToPosByTick", posStart(posEnd(hasGravity(tickMove(blockAndAge(commandRegistryAccess, false, moveFromPosToPosByTick)))))))
                 .then(add("moveFromBlockPosToBlockPosByTick", blockPosStart(blockPosEnd(hasGravity(tickMove(blockAndAge(commandRegistryAccess, true, moveFromPosToPosByTick)))))))
         );
+        //#else
+        //$$ dispatcher.register(literal("fallingblock")
+        //$$         .requires(source -> source.hasPermissionLevel(2))
+        //$$         .then(add("moveFromPos", posStart(motion(hasGravity(blockAndAge(false, moveFromPos))))))
+        //$$         .then(add("moveFromBlockPos", blockPosStart(motion(hasGravity(blockAndAge(true, moveFromPos))))))
+        //$$         .then(add("moveFromPosByTick", posStart(motion(hasGravity(tickMove(blockAndAge(false, moveFromPosByTick)))))))
+        //$$         .then(add("moveFromPosByTick", blockPosStart(motion(hasGravity(tickMove(blockAndAge( true, moveFromPosByTick)))))))
+        //$$         .then(add("moveToPosByTick", posEnd(motion(hasGravity(tickMove(blockAndAge(false, moveToPosByTick)))))))
+        //$$         .then(add("moveToBlockPosByTick", blockPosEnd(motion(hasGravity(tickMove(blockAndAge( true, moveToPosByTick)))))))
+        //$$         .then(add("moveToPosByYMove", posEnd(motion(yMove(hasGravity(blockAndAge(false, moveToPosByYMove)))))))
+        //$$         .then(add("moveToBlockPosByYMove", blockPosEnd(motion(yMove(hasGravity(blockAndAge(true, moveToPosByYMove)))))))
+        //$$         .then(add("moveFromPosToPosByMotionY", posStart(posEnd(motionY(blockAndAge(false, moveFromPosToPosByMotionY))))))
+        //$$         .then(add("moveFromBlockPosToBlockPosByMotionY", blockPosStart(blockPosEnd(motionY(blockAndAge(true, moveFromPosToPosByMotionY))))))
+        //$$         .then(add("moveFromPosToPosByTick", posStart(posEnd(hasGravity(tickMove(blockAndAge( false, moveFromPosToPosByTick)))))))
+        //$$         .then(add("moveFromBlockPosToBlockPosByTick", blockPosStart(blockPosEnd(hasGravity(tickMove(blockAndAge( true, moveFromPosToPosByTick)))))))
+        //$$ );
+        //#endif
     }
 
     private static LiteralArgumentBuilder<ServerCommandSource> add(String str, RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
@@ -106,9 +137,19 @@ public class FallingBlockCommand {
         return argument("tickMove", IntegerArgumentType.integer()).then(argument);
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, BlockStateArgument> blockAndAge(CommandRegistryAccess commandRegistryAccess, boolean isBlockPos,
-                                                                                                Executor executor) {
-        return argument("block", BlockStateArgumentType.blockState(commandRegistryAccess)).executes(context -> {
+    private static RequiredArgumentBuilder<ServerCommandSource, BlockStateArgument> blockAndAge(
+            //#if MC>=12001
+            CommandRegistryAccess commandRegistryAccess,
+            //#endif
+            boolean isBlockPos,
+            Executor executor
+    ) {
+        //#if MC>=12001
+        BlockStateArgumentType blockStateArgumentType = BlockStateArgumentType.blockState(commandRegistryAccess);
+        //#else
+        //$$ BlockStateArgumentType blockStateArgumentType = BlockStateArgumentType.blockState();
+        //#endif
+        return argument("block", blockStateArgumentType).executes(context -> {
             checkAndRun(context, executor.execute(context, isBlockPos, false));
             return Command.SINGLE_SUCCESS;
         }).then(argument("age", IntegerArgumentType.integer(-1)).executes(context -> {

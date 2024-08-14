@@ -1,22 +1,38 @@
 package yancey.commandfallingblock.data;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+
+//#if MC>=12001
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
+//#endif
+
+//#if MC>=11802
+import com.mojang.logging.LogUtils;
 import net.minecraft.world.WorldEvents;
 import org.slf4j.Logger;
+//#else
+//$$ import org.apache.logging.log4j.LogManager;
+//$$ import org.apache.logging.log4j.Logger;
+//#endif
 
 public class DataBlock {
 
+    //#if MC>=11802
     private static final Logger LOGGER = LogUtils.getLogger();
+    //#else
+    //$$ private static final Logger LOGGER = LogManager.getLogger();
+    //#endif
+
+    //#if MC>=12001
     public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
+    //#endif
     public final BlockState blockState;
     public final NbtCompound nbtCompound;
 
@@ -26,7 +42,11 @@ public class DataBlock {
     }
 
     public DataBlock(NbtCompound nbtCompound) {
+        //#if MC>=12001
         blockState = NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState"));
+        //#else
+        //$$ blockState = NbtHelper.toBlockState(nbtCompound.getCompound("BlockState"));
+        //#endif
         if (nbtCompound.contains("Compound")) {
             this.nbtCompound = nbtCompound.getCompound("Compound");
         } else {
@@ -59,25 +79,48 @@ public class DataBlock {
      * @param packetByteBuf byte buffer
      * @param blockPos      block position
      */
-    public void writeClientRenderData(PacketByteBuf packetByteBuf, BlockPos blockPos, RegistryWrapper.WrapperLookup registryManager) {
+    public void writeClientRenderData(
+            //#if MC>=12005
+            RegistryWrapper.WrapperLookup registryManager,
+            //#endif
+            PacketByteBuf packetByteBuf,
+            BlockPos blockPos
+
+    ) {
         packetByteBuf.writeInt(Block.getRawIdFromState(blockState));
         if (blockState.getRenderType() == BlockRenderType.MODEL) {
             return;
         }
-        if (nbtCompound != null && blockState.getBlock() instanceof BlockEntityProvider blockEntityProvider) {
-            BlockEntity blockEntity = blockEntityProvider.createBlockEntity(blockPos, blockState);
+        Block block = blockState.getBlock();
+        if (nbtCompound != null && block instanceof BlockEntityProvider) {
+            //#if MC>=11802
+            BlockEntity blockEntity = ((BlockEntityProvider) block).createBlockEntity(blockPos, blockState);
+            //#else
+            //$$ BlockEntity blockEntity = ((BlockEntityProvider) block).createBlockEntity(null);
+            //#endif
             if (blockEntity == null) {
                 packetByteBuf.writeBoolean(false);
                 return;
             }
             try {
+                //#if MC>=12005
                 blockEntity.read(nbtCompound, registryManager);
+                //#elseif MC>=11802
+                //$$ blockEntity.readNbt(nbtCompound);
+                //#else
+                //$$ blockEntity.setLocation(null, blockPos);
+                //$$ blockEntity.fromTag(blockState, nbtCompound);
+                //#endif
             } catch (Exception e) {
                 LOGGER.warn("Failed to load block entity", e);
                 packetByteBuf.writeBoolean(false);
                 return;
             }
+            //#if MC>=12005
             NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt(registryManager);
+            //#else
+            //$$ NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt();
+            //#endif
             if (initialChunkDataNbt == null) {
                 packetByteBuf.writeBoolean(false);
                 return;
@@ -96,7 +139,11 @@ public class DataBlock {
         BlockState blockStatePre = world.getBlockState(blockPos);
         if (!blockStatePre.isAir()) {
             if (isDestroy && !(blockState.getBlock() instanceof AbstractFireBlock)) {
+                //#if MC>=12005
                 world.syncWorldEvent(WorldEvents.BLOCK_BROKEN, blockPos, Block.getRawIdFromState(blockStatePre));
+                //#else
+                //$$ world.syncWorldEvent(2001, blockPos, Block.getRawIdFromState(blockStatePre));
+                //#endif
             }
             if (isDropItem) {
                 Block.dropStacks(blockStatePre, world, blockPos, world.getBlockEntity(blockPos));
@@ -110,7 +157,14 @@ public class DataBlock {
             return;
         }
         try {
+            //#if MC>=12005
             blockEntity.read(nbtCompound, world.getRegistryManager());
+            //#elseif MC>=11802
+            //$$ blockEntity.readNbt(nbtCompound);
+            //#else
+            //$$ blockEntity.setLocation(null, blockPos);
+            //$$ blockEntity.fromTag(blockState, nbtCompound);
+            //#endif
         } catch (Exception e) {
             LOGGER.warn("Failed to load block entity", e);
         }

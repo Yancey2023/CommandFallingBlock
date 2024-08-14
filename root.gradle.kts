@@ -39,7 +39,7 @@ preprocess {
     fabric12003.link(fabric12002)
     fabric12002.link(fabric12001)
     fabric12001.link(fabric11802)
-    fabric11802.link(fabric11605)
+    fabric11802.link(fabric11605, file("versions/mapping-1.18.2-1.16.5.txt"))
     // For any link, you can optionally specify a file containing extra mappings which the preprocessor cannot infer by
     // itself, e.g. forge intermediary names do not contain class names, so you may need to supply mappings for those
     // manually.

@@ -1,10 +1,8 @@
 package yancey.commandfallingblock.entity;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.*;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -21,23 +19,78 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
-import org.slf4j.Logger;
 import yancey.commandfallingblock.CommandFallingBlock;
 import yancey.commandfallingblock.data.DataBlock;
 import yancey.commandfallingblock.data.DataFallingBlock;
 import yancey.commandfallingblock.mixin.FallingBlockEntityAccessor;
 import yancey.commandfallingblock.network.SummonFallingBlockPayloadS2C;
 
+
+//#if MC<12100
+//$$ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
+//#endif
+
+//#if MC>=12001
 import java.util.Objects;
+//#else
+//$$ import net.minecraft.network.Packet;
+//$$ import net.minecraft.text.TranslatableText;
+//#endif
+
+//#if MC>=11802
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
+import net.minecraft.entity.damage.DamageSource;
+//#else
+//$$ import org.apache.logging.log4j.LogManager;
+//$$ import org.apache.logging.log4j.Logger;
+//#endif
 
 public class EntityBetterFallingBlock extends Entity {
 
+    //#if MC>=12001
     public static final Identifier ID_BETTER_FALLING_BLOCK = Objects.requireNonNull(Identifier.of(CommandFallingBlock.MOD_ID, "better_falling_block"));
+    //#else
+    //$$ public static final Identifier ID_BETTER_FALLING_BLOCK = new Identifier(CommandFallingBlock.MOD_ID, "better_falling_block");
+    //#endif
     public static final EntityType<EntityBetterFallingBlock> BETTER_FALLING_BLOCK =
+            //#if MC>=12001
             EntityType.Builder.create((EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new, SpawnGroup.MISC)
-                    .dimensions(0.98f, 0.98f).maxTrackingRange(10).trackingTickInterval(20).build(ID_BETTER_FALLING_BLOCK.toString());
+                    //#else
+                    //$$ FabricEntityTypeBuilder.create(SpawnGroup.MISC, (EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new)
+                    //#endif
 
+                    //#if MC>=12005
+                    .dimensions(0.98f, 0.98f)
+                    //#elseif MC>=12001
+                    //$$ .setDimensions(0.98F, 0.98F)
+                    //#else
+                    //$$ .dimensions(EntityDimensions.fixed(0.98f, 0.98f))
+                    //#endif
+
+                    //#if MC>=12001
+                    .maxTrackingRange(10)
+                    //#else
+                    //$$ .trackRangeChunks(10)
+                    //#endif
+
+                    //#if MC>=12001
+                    .trackingTickInterval(20)
+                    //#else
+                    //$$ .trackedUpdateRate(20)
+                    //#endif
+
+                    //#if MC>=12001
+                    .build(ID_BETTER_FALLING_BLOCK.toString());
+                    //#else
+                    //$$ .build();
+                    //#endif
+
+    //#if MC>=11802
     private static final Logger LOGGER = LogUtils.getLogger();
+    //#else
+    //$$ private static final Logger LOGGER = LogManager.getLogger();
+    //#endif
 
     public BlockPos blockPosEnd;
     public DataBlock dataBlock;
@@ -54,7 +107,7 @@ public class EntityBetterFallingBlock extends Entity {
     public EntityBetterFallingBlock(World world, BlockPos blockPosEnd, Vec3d pos, Vec3d motion, DataBlock dataBlock, boolean hasNoGravity, int tickMove, int age) {
         super(BETTER_FALLING_BLOCK, world);
         this.dataBlock = dataBlock;
-        intersectionChecked = true;
+        this.intersectionChecked = true;
         setPos(pos.x, pos.y, pos.z);
         setVelocity(motion);
         prevX = pos.x;
@@ -87,19 +140,39 @@ public class EntityBetterFallingBlock extends Entity {
         return this.dataTracker.get(BLOCK_POS);
     }
 
+    //#if MC>=11802
     @Override
     protected MoveEffect getMoveEffect() {
         return MoveEffect.NONE;
     }
+    //#else
+    //$$ @Override
+    //$$ protected boolean canClimb() {
+    //$$     return false;
+    //$$ }
+    //#endif
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
+    protected void initDataTracker(
+            //#if MC>=12005
+            DataTracker.Builder builder
+            //#endif
+    ) {
+        //#if MC>=12005
         builder.add(BLOCK_POS, BlockPos.ORIGIN);
+        //#else
+        //$$ this.dataTracker.startTracking(BLOCK_POS, BlockPos.ORIGIN);
+        //#endif
     }
+
 
     @Override
     public boolean canHit() {
+        //#if MC>=11802
         return !this.isRemoved();
+        //#else
+        //$$ return !this.removed;
+        //#endif
     }
 
     @Override
@@ -115,7 +188,9 @@ public class EntityBetterFallingBlock extends Entity {
             discard();
             return;
         }
+        //#if MC>=11802
         World world = getWorld();
+        //#endif
         timeFalling++;
         if (!world.isClient && timeFalling >= age && age >= 0) {
             discard();
@@ -157,15 +232,33 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     public void onLand(Block block, BlockPos pos) {
-        if (block instanceof LandingBlock landingBlock) {
-            landingBlock.onLanding(getWorld(), pos, dataBlock.blockState, getWorld().getBlockState(getBlockPos()), getFallingBlockEntity());
+        //#if MC>=11802
+        if (block instanceof LandingBlock) {
+            World world = getWorld();
+            ((LandingBlock) block).onLanding(world, pos, dataBlock.blockState, world.getBlockState(getBlockPos()), getFallingBlockEntity());
         }
+        //#else
+        //$$ if (block instanceof FallingBlock) {
+        //$$     //#if MC>=11802
+        //$$     //$$ World world = getWorld();
+        //$$     //#endif
+        //$$     ((FallingBlock) block).onLanding(world, pos, dataBlock.blockState, world.getBlockState(getBlockPos()), getFallingBlockEntity());
+        //$$ }
+        //#endif
     }
 
     public FallingBlockEntity getFallingBlockEntity() {
-        FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, getWorld());
+        //#if MC>=11802
+        World world = getWorld();
+        //#endif
+        FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, world);
         ((FallingBlockEntityAccessor) entity).setBlock(dataBlock.blockState);
+        //#if MC>=11802
         entity.setPosition(getPos());
+        //#else
+        //$$ Vec3d pos = getPos();
+        //$$ entity.setPosition(pos.x, pos.y, pos.z);
+        //#endif
         entity.setSilent(isSilent());
         entity.setFallingBlockPos(getFallingBlockPos());
         entity.setVelocity(getVelocity());
@@ -177,10 +270,17 @@ public class EntityBetterFallingBlock extends Entity {
         return entity;
     }
 
+    //#if MC>=11802
     @Override
     public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
         return false;
     }
+    //#else
+    //$$ @Override
+    //$$ public boolean handleFallDamage(float fallDistance, float damageMultiplier) {
+    //$$     return false;
+    //$$ }
+    //#endif
 
     @Override
     protected void writeCustomDataToNbt(NbtCompound nbtCompound) {
@@ -199,15 +299,34 @@ public class EntityBetterFallingBlock extends Entity {
         tickMove = nbtCompound.getInt("TickMove");
         age = nbtCompound.getInt("Age");
         prepareDied = nbtCompound.getInt("PrepareDied");
+        //#if MC>=12005
         setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound, "BlockPosEnd").orElse(BlockPos.ORIGIN));
+        //#else
+        //$$ setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound.getCompound("BlockPosEnd")));
+        //#endif
         if (tickMove >= 0) {
             noClip = true;
         }
         Block block = dataBlock.blockState.getBlock();
         if (block instanceof BlockEntityProvider) {
+            //#if MC>=11802
             blockEntity = ((BlockEntityProvider) block).createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
+            //#else
+            //$$ blockEntity = ((BlockEntityProvider) block).createBlockEntity(world);
+            //#endif
             if (dataBlock.nbtCompound != null && blockEntity != null) {
-                blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
+                try {
+                    //#if MC>=12005
+                    blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
+                    //#elseif MC>=11802
+                    //$$ blockEntity.readNbt(dataBlock.nbtCompound);
+                    //#else
+                    //$$ blockEntity.setLocation(world, getFallingBlockPos());
+                    //$$ blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
+                    //#endif
+                } catch (Exception e) {
+                    LOGGER.warn("Failed to load block entity from falling block", e);
+                }
             }
         }
     }
@@ -227,7 +346,11 @@ public class EntityBetterFallingBlock extends Entity {
     @Override
     @SuppressWarnings("SpellCheckingInspection")
     protected Text getDefaultName() {
+        //#if MC>=12001
         return Text.translatable("entity.commandfallingblock.better_falling_block_type", dataBlock.blockState.getBlock().getName());
+        //#else
+        //$$ return new TranslatableText("entity.commandfallingblock.better_falling_block_type", String.valueOf(dataBlock.blockState.getBlock().getName()));
+        //#endif
     }
 
     @Override
@@ -235,34 +358,66 @@ public class EntityBetterFallingBlock extends Entity {
         return true;
     }
 
+    //#if MC<12001
+    //$$ @Override
+    //$$ public Packet<?> createSpawnPacket() {
+    //$$     return null;
+    //$$ }
+    //#endif
+
     public void onSpawnPacket(SummonFallingBlockPayloadS2C payload) {
-        getTrackedPosition().setPos(payload.pos());
-        refreshPositionAfterTeleport(payload.pos());
-        setPosition(payload.pos());
-        setId(payload.id());
-        setUuid(payload.uuid());
-        setVelocity(payload.velocity());
-        dataBlock = payload.dataBlock();
-        tickMove = payload.tickMove();
+
+        //#if MC>=12001
+        getTrackedPosition().setPos(payload.pos);
+        //#else
+        //$$ updateTrackedPosition(payload.pos);
+        //#endif
+
+        refreshPositionAfterTeleport(payload.pos);
+
+        //#if MC>=12001
+        setPosition(payload.pos);
+        //#else
+        //$$ setPosition(payload.pos.x, payload.pos.y, payload.pos.z);
+        //#endif
+
+        setId(payload.id);
+        setUuid(payload.uuid);
+        setVelocity(payload.velocity);
+        dataBlock = payload.dataBlock;
+        tickMove = payload.tickMove;
         age = -1;
-        intersectionChecked = true;
-        setFallingBlockPos(payload.blockPosEnd());
-        setNoGravity(payload.hasNoGravity());
+        this.intersectionChecked = true;
+        setFallingBlockPos(payload.blockPosEnd);
+        setNoGravity(payload.hasNoGravity);
         if (tickMove >= 0) {
             noClip = true;
         }
+        Block block = dataBlock.blockState.getBlock();
         if (dataBlock.nbtCompound != null &&
                 dataBlock.blockState.getRenderType() != BlockRenderType.MODEL &&
-                dataBlock.blockState.getBlock() instanceof BlockEntityProvider blockEntityProvider
+                block instanceof BlockEntityProvider
         ) {
-            blockEntity = blockEntityProvider.createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
-            if (blockEntity != null) {
+            //#if MC>=11802
+            blockEntity = ((BlockEntityProvider) block).createBlockEntity(getFallingBlockPos(), dataBlock.blockState);
+            //#else
+            //$$ blockEntity = ((BlockEntityProvider) block).createBlockEntity(world);
+            //#endif
+            if (dataBlock.nbtCompound != null && blockEntity != null) {
                 try {
+                    //#if MC>=12005
                     blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
+                    //#elseif MC>=11802
+                    //$$ blockEntity.readNbt(dataBlock.nbtCompound);
+                    //#else
+                    //$$ blockEntity.setLocation(world, getFallingBlockPos());
+                    //$$ blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
+                    //#endif
                 } catch (Exception e) {
                     LOGGER.warn("Failed to load block entity from falling block", e);
                 }
             }
         }
     }
+
 }

@@ -1,13 +1,22 @@
 package yancey.commandfallingblock;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import yancey.commandfallingblock.command.FallingBlockCommand;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
+
+//#if MC>=12001
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+//#else
+//$$ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+//$$ import net.minecraft.util.registry.Registry;
+//#endif
+
+//#if MC>=12005
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import yancey.commandfallingblock.network.SummonFallingBlockPayloadS2C;
+//#endif
 
 public class CommandFallingBlock implements ModInitializer {
 
@@ -16,8 +25,20 @@ public class CommandFallingBlock implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        //#if MC>=12001
         Registry.register(Registries.ENTITY_TYPE, EntityBetterFallingBlock.ID_BETTER_FALLING_BLOCK, EntityBetterFallingBlock.BETTER_FALLING_BLOCK);
+        //#else
+        //$$ Registry.register(Registry.ENTITY_TYPE, EntityBetterFallingBlock.ID_BETTER_FALLING_BLOCK, EntityBetterFallingBlock.BETTER_FALLING_BLOCK);
+        //#endif
+
+        //#if MC>=12005
         PayloadTypeRegistry.playS2C().register(SummonFallingBlockPayloadS2C.ID, SummonFallingBlockPayloadS2C.CODEC);
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> FallingBlockCommand.register(dispatcher, registryAccess));
+        //#endif
+
+        //#if MC>=12001
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> FallingBlockCommand.register(registryAccess, dispatcher));
+        //#else
+        //$$ CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> FallingBlockCommand.register(dispatcher));
+        //#endif
     }
 }

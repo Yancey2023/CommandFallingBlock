@@ -1,0 +1,4 @@
+net.minecraft.entity.Entity intersectionChecked inanimate
+net.minecraft.entity.Entity discard() remove()
+net.minecraft.entity.Entity setId() setEntityId()
+net.minecraft.entity.Entity getId() getEntityId()
