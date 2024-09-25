@@ -9,6 +9,12 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
+
+//#if MC>=12005
+import net.minecraft.network.RegistryByteBuf;
+//#endif
 
 //#if MC>=12001
 import net.minecraft.registry.Registries;
@@ -16,21 +22,12 @@ import net.minecraft.registry.RegistryWrapper;
 //#endif
 
 //#if MC>=11802
-import com.mojang.logging.LogUtils;
 import net.minecraft.world.WorldEvents;
-import org.slf4j.Logger;
-//#else
-//$$ import org.apache.logging.log4j.LogManager;
-//$$ import org.apache.logging.log4j.Logger;
 //#endif
 
 public class DataBlock {
 
-    //#if MC>=11802
     private static final Logger LOGGER = LogUtils.getLogger();
-    //#else
-    //$$ private static final Logger LOGGER = LogManager.getLogger();
-    //#endif
 
     //#if MC>=12001
     public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
@@ -78,18 +75,19 @@ public class DataBlock {
     /**
      * write data used for render in client
      *
-     * @param packetByteBuf byte buffer
-     * @param blockPos      block position
+     * @param buf      byte buffer
+     * @param blockPos block position
      */
     public void writeClientRenderData(
             //#if MC>=12005
-            RegistryWrapper.WrapperLookup registryManager,
+            RegistryByteBuf buf,
+            //#else
+            //$$ PacketByteBuf buf,
             //#endif
-            PacketByteBuf packetByteBuf,
             BlockPos blockPos
 
     ) {
-        packetByteBuf.writeInt(Block.getRawIdFromState(blockState));
+        buf.writeInt(Block.getRawIdFromState(blockState));
         if (blockState.getRenderType() == BlockRenderType.MODEL) {
             return;
         }
@@ -101,30 +99,30 @@ public class DataBlock {
             //$$ BlockEntity blockEntity = ((BlockEntityProvider) block).createBlockEntity(null);
             //#endif
             if (blockEntity == null) {
-                packetByteBuf.writeBoolean(false);
+                buf.writeBoolean(false);
                 return;
             }
             //#if MC>=12005
-            writeNbtToBlockEntity(registryManager, blockEntity);
+            writeNbtToBlockEntity(buf.getRegistryManager(), blockEntity);
             //#elseif MC>=11802
             //$$ writeNbtToBlockEntity(blockEntity);
             //#else
             //$$ writeNbtToBlockEntity(blockPos, blockEntity);
             //#endif
             //#if MC>=12005
-            NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt(registryManager);
+            NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt(buf.getRegistryManager());
             //#else
             //$$ NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt();
             //#endif
             if (initialChunkDataNbt == null) {
-                packetByteBuf.writeBoolean(false);
+                buf.writeBoolean(false);
                 return;
             }
-            packetByteBuf.writeBoolean(true);
-            packetByteBuf.writeNbt(initialChunkDataNbt);
+            buf.writeBoolean(true);
+            buf.writeNbt(initialChunkDataNbt);
             return;
         }
-        packetByteBuf.writeBoolean(false);
+        buf.writeBoolean(false);
     }
 
     public void run(ServerWorld world, BlockPos blockPos, boolean isDestroy, boolean isDropItem) {
@@ -134,7 +132,7 @@ public class DataBlock {
         BlockState blockStatePre = world.getBlockState(blockPos);
         if (!blockStatePre.isAir()) {
             if (isDestroy && !(blockState.getBlock() instanceof AbstractFireBlock)) {
-                //#if MC>=12005
+                //#if MC>=11802
                 world.syncWorldEvent(WorldEvents.BLOCK_BROKEN, blockPos, Block.getRawIdFromState(blockStatePre));
                 //#else
                 //$$ world.syncWorldEvent(2001, blockPos, Block.getRawIdFromState(blockStatePre));
@@ -161,9 +159,7 @@ public class DataBlock {
         blockEntity.markDirty();
     }
 
-    public BlockEntity createBlockEntity(
-            World world,
-            BlockPos blockPos) {
+    public BlockEntity createBlockEntity(World world, BlockPos blockPos) {
         if (blockState instanceof BlockEntityProvider) {
 
             //#if MC>=11802

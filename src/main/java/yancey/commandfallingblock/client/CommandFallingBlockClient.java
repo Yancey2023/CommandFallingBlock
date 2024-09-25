@@ -6,14 +6,12 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 import yancey.commandfallingblock.network.SummonFallingBlockPayloadS2C;
-
-//#if MC>=11802
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
+
+//#if MC>=11802
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 //#else
-//$$ import org.apache.logging.log4j.LogManager;
-//$$ import org.apache.logging.log4j.Logger;
 //$$ import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
 //#endif
 
@@ -26,11 +24,7 @@ import net.minecraft.client.MinecraftClient;
 @Environment(EnvType.CLIENT)
 public class CommandFallingBlockClient implements ClientModInitializer {
 
-    //#if MC>=11802
     private static final Logger LOGGER = LogUtils.getLogger();
-    //#else
-    //$$ private static final Logger LOGGER = LogManager.getLogger();
-    //#endif
 
     public void onInitializeClient() {
         //#if MC>=12005

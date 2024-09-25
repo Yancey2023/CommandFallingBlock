@@ -38,7 +38,10 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
     //#else
     //$$ private static final BlockEntityRenderDispatcher blockEntityRenderDispatcher = BlockEntityRenderDispatcher.INSTANCE;
     //#endif
+
+    //#if MC>=12001
     private final BlockRenderManager blockRenderManager;
+    //#endif
 
     public RenderBetterFallingBlock(
             //#if MC>=11802
@@ -52,11 +55,11 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
         //#else
         //$$ super(dispatcher);
         //#endif
+
         this.shadowRadius = 0.5f;
+
         //#if MC>=12001
         this.blockRenderManager = context.getBlockRenderManager();
-        //#else
-        //$$ this.blockRenderManager = MinecraftClient.getInstance().getBlockRenderManager();
         //#endif
     }
 
@@ -72,6 +75,9 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
         if (renderType == BlockRenderType.MODEL) {
             matrixStack.push();
             matrixStack.translate(-0.5, 0.0, -0.5);
+            //#if MC<12001
+            //$$ BlockRenderManager blockRenderManager = MinecraftClient.getInstance().getBlockRenderManager();
+            //#endif
             blockRenderManager.getModelRenderer().render(
                     world,
                     blockRenderManager.getModel(blockState),

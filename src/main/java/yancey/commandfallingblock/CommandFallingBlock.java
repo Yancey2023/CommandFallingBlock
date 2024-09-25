@@ -25,11 +25,15 @@ public class CommandFallingBlock implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        //#if MC>=12001
-        Registry.register(Registries.ENTITY_TYPE, EntityBetterFallingBlock.ID_BETTER_FALLING_BLOCK, EntityBetterFallingBlock.BETTER_FALLING_BLOCK);
-        //#else
-        //$$ Registry.register(Registry.ENTITY_TYPE, EntityBetterFallingBlock.ID_BETTER_FALLING_BLOCK, EntityBetterFallingBlock.BETTER_FALLING_BLOCK);
-        //#endif
+        Registry.register(
+                //#if MC>=12001
+                Registries.ENTITY_TYPE,
+                //#else
+                //$$ Registry.ENTITY_TYPE,
+                //#endif
+                EntityBetterFallingBlock.ID_BETTER_FALLING_BLOCK,
+                EntityBetterFallingBlock.BETTER_FALLING_BLOCK
+        );
 
         //#if MC>=12005
         PayloadTypeRegistry.playS2C().register(SummonFallingBlockPayloadS2C.ID, SummonFallingBlockPayloadS2C.CODEC);

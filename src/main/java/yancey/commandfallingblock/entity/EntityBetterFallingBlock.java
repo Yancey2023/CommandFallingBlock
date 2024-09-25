@@ -24,7 +24,8 @@ import yancey.commandfallingblock.util.DataBlock;
 import yancey.commandfallingblock.util.DataFallingBlock;
 import yancey.commandfallingblock.mixin.FallingBlockEntityAccessor;
 import yancey.commandfallingblock.network.SummonFallingBlockPayloadS2C;
-
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 
 //#if MC<12001
 //$$ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
@@ -38,12 +39,7 @@ import java.util.Objects;
 //#endif
 
 //#if MC>=11802
-import com.mojang.logging.LogUtils;
-import org.slf4j.Logger;
 import net.minecraft.entity.damage.DamageSource;
-//#else
-//$$ import org.apache.logging.log4j.LogManager;
-//$$ import org.apache.logging.log4j.Logger;
 //#endif
 
 public class EntityBetterFallingBlock extends Entity {
@@ -86,11 +82,7 @@ public class EntityBetterFallingBlock extends Entity {
                     //$$ .build();
                     //#endif
 
-    //#if MC>=11802
     private static final Logger LOGGER = LogUtils.getLogger();
-    //#else
-    //$$ private static final Logger LOGGER = LogManager.getLogger();
-    //#endif
 
     public BlockPos blockPosEnd;
     public DataBlock dataBlock;

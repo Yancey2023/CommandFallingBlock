@@ -2,3 +2,5 @@ net.minecraft.entity.Entity intersectionChecked inanimate
 net.minecraft.entity.Entity discard() remove()
 net.minecraft.entity.Entity setId() setEntityId()
 net.minecraft.entity.Entity getId() getEntityId()
+com.mojang.logging.LogUtils org.apache.logging.log4j.LogManager
+org.slf4j.Logger org.apache.logging.log4j.Logger

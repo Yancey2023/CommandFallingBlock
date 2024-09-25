@@ -17,7 +17,6 @@ import net.minecraft.network.packet.CustomPayload;
 
 import static yancey.commandfallingblock.CommandFallingBlock.MOD_ID;
 
-
 public class SummonFallingBlockPayloadS2C
         //#if MC>=12005
         implements CustomPayload
@@ -79,11 +78,7 @@ public class SummonFallingBlockPayloadS2C
         buf.writeDouble(velocity.x);
         buf.writeDouble(velocity.y);
         buf.writeDouble(velocity.z);
-        //#if MC>=12005
-        dataBlock.writeClientRenderData(buf.getRegistryManager(), buf, blockPosEnd);
-        //#else
-        //$$ dataBlock.writeClientRenderData(buf, blockPosEnd);
-        //#endif
+        dataBlock.writeClientRenderData(buf, blockPosEnd);
         buf.writeBoolean(hasNoGravity);
         buf.writeInt(tickMove);
         if (tickMove >= 0) {
