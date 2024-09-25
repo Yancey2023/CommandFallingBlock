@@ -27,7 +27,7 @@ public class SummonFallingBlockPayloadS2C
     public static final CustomPayload.Id<SummonFallingBlockPayloadS2C> ID = new CustomPayload.Id<>(Identifier.of(MOD_ID, "summon_falling_block"));
     public static final PacketCodec<RegistryByteBuf, SummonFallingBlockPayloadS2C> CODEC
             = PacketCodec.of(SummonFallingBlockPayloadS2C::encode, SummonFallingBlockPayloadS2C::decode);
-    //#elseif MC > 12001
+    //#elseif MC>=12000
     //$$ public static Identifier ID = Identifier.of(MOD_ID, "summon_falling_block");
     //#else
     //$$ public static Identifier ID = new Identifier(MOD_ID, "summon_falling_block");

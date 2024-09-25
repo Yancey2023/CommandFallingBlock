@@ -14,6 +14,7 @@ preprocess {
     // The mappings value is currently meaningless.
     val fabric11605 = createNode("1.16.5-fabric", 11605, "yarn")
     val fabric11802 = createNode("1.18.2-fabric", 11802, "yarn")
+    val fabric12000 = createNode("1.20-fabric", 12000, "yarn")
     val fabric12001 = createNode("1.20.1-fabric", 12001, "yarn")
     val fabric12002 = createNode("1.20.2-fabric", 12002, "yarn")
     val fabric12003 = createNode("1.20.3-fabric", 12003, "yarn")
@@ -38,7 +39,8 @@ preprocess {
     fabric12004.link(fabric12003)
     fabric12003.link(fabric12002)
     fabric12002.link(fabric12001)
-    fabric12001.link(fabric11802)
+    fabric12001.link(fabric12000)
+    fabric12000.link(fabric11802)
     fabric11802.link(fabric11605, file("versions/mapping-1.18.2-1.16.5.txt"))
     // For any link, you can optionally specify a file containing extra mappings which the preprocessor cannot infer by
     // itself, e.g. forge intermediary names do not contain class names, so you may need to supply mappings for those

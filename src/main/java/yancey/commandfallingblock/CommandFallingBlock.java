@@ -4,7 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import yancey.commandfallingblock.command.FallingBlockCommand;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
-//#if MC>=12001
+//#if MC>=12000
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -26,7 +26,7 @@ public class CommandFallingBlock implements ModInitializer {
     @Override
     public void onInitialize() {
         Registry.register(
-                //#if MC>=12001
+                //#if MC>=12000
                 Registries.ENTITY_TYPE,
                 //#else
                 //$$ Registry.ENTITY_TYPE,
@@ -39,7 +39,7 @@ public class CommandFallingBlock implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(SummonFallingBlockPayloadS2C.ID, SummonFallingBlockPayloadS2C.CODEC);
         //#endif
 
-        //#if MC>=12001
+        //#if MC>=12000
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> FallingBlockCommand.register(registryAccess, dispatcher));
         //#else
         //$$ CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> FallingBlockCommand.register(dispatcher));

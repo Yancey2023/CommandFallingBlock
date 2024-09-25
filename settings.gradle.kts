@@ -19,6 +19,7 @@ pluginManagement {
 listOf(
     "1.16.5-fabric",
     "1.18.2-fabric",
+    "1.20-fabric",
     "1.20.1-fabric",
     "1.20.2-fabric",
     "1.20.3-fabric",

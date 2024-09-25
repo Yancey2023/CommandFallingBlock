@@ -27,11 +27,11 @@ import yancey.commandfallingblock.network.SummonFallingBlockPayloadS2C;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
-//#if MC<12001
+//#if MC<12000
 //$$ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 //#endif
 
-//#if MC>=12001
+//#if MC>=12000
 import java.util.Objects;
 //#else
 //$$ import net.minecraft.network.Packet;
@@ -44,13 +44,13 @@ import net.minecraft.entity.damage.DamageSource;
 
 public class EntityBetterFallingBlock extends Entity {
 
-    //#if MC>=12001
+    //#if MC>=12000
     public static final Identifier ID_BETTER_FALLING_BLOCK = Objects.requireNonNull(Identifier.of(CommandFallingBlock.MOD_ID, "better_falling_block"));
     //#else
     //$$ public static final Identifier ID_BETTER_FALLING_BLOCK = new Identifier(CommandFallingBlock.MOD_ID, "better_falling_block");
     //#endif
     public static final EntityType<EntityBetterFallingBlock> BETTER_FALLING_BLOCK =
-            //#if MC>=12001
+            //#if MC>=12000
             EntityType.Builder.create((EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new, SpawnGroup.MISC)
                     //#else
                     //$$ FabricEntityTypeBuilder.create(SpawnGroup.MISC, (EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new)
@@ -58,25 +58,25 @@ public class EntityBetterFallingBlock extends Entity {
 
                     //#if MC>=12005
                     .dimensions(0.98f, 0.98f)
-                    //#elseif MC>=12001
+                    //#elseif MC>=12000
                     //$$ .setDimensions(0.98F, 0.98F)
                     //#else
                     //$$ .dimensions(EntityDimensions.fixed(0.98f, 0.98f))
                     //#endif
 
-                    //#if MC>=12001
+                    //#if MC>=12000
                     .maxTrackingRange(10)
                     //#else
                     //$$ .trackRangeChunks(10)
                     //#endif
 
-                    //#if MC>=12001
+                    //#if MC>=12000
                     .trackingTickInterval(20)
                     //#else
                     //$$ .trackedUpdateRate(20)
                     //#endif
 
-                    //#if MC>=12001
+                    //#if MC>=12000
                     .build(ID_BETTER_FALLING_BLOCK.toString());
                     //#else
                     //$$ .build();
@@ -322,7 +322,7 @@ public class EntityBetterFallingBlock extends Entity {
     @Override
     @SuppressWarnings("SpellCheckingInspection")
     protected Text getDefaultName() {
-        //#if MC>=12001
+        //#if MC>=12000
         return Text.translatable("entity.commandfallingblock.better_falling_block_type", dataBlock.blockState.getBlock().getName());
         //#else
         //$$ return new TranslatableText("entity.commandfallingblock.better_falling_block_type", String.valueOf(dataBlock.blockState.getBlock().getName()));
@@ -334,7 +334,7 @@ public class EntityBetterFallingBlock extends Entity {
         return true;
     }
 
-    //#if MC<12001
+    //#if MC<12000
     //$$ @Override
     //$$ public Packet<?> createSpawnPacket() {
     //$$     return null;
@@ -343,7 +343,7 @@ public class EntityBetterFallingBlock extends Entity {
 
     public void onSpawnPacket(SummonFallingBlockPayloadS2C payload) {
 
-        //#if MC>=12001
+        //#if MC>=12000
         getTrackedPosition().setPos(payload.pos);
         //#else
         //$$ updateTrackedPosition(payload.pos);
@@ -351,7 +351,7 @@ public class EntityBetterFallingBlock extends Entity {
 
         refreshPositionAfterTeleport(payload.pos);
 
-        //#if MC>=12001
+        //#if MC>=12000
         setPosition(payload.pos);
         //#else
         //$$ setPosition(payload.pos.x, payload.pos.y, payload.pos.z);

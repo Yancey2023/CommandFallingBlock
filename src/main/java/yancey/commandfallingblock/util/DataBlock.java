@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import net.minecraft.network.RegistryByteBuf;
 //#endif
 
-//#if MC>=12001
+//#if MC>=12000
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
 //#endif
@@ -29,7 +29,7 @@ public class DataBlock {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    //#if MC>=12001
+    //#if MC>=12000
     public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
     //#endif
     public final BlockState blockState;
@@ -41,7 +41,7 @@ public class DataBlock {
     }
 
     public DataBlock(NbtCompound nbtCompound) {
-        //#if MC>=12001
+        //#if MC>=12000
         blockState = NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState"));
         //#else
         //$$ blockState = NbtHelper.toBlockState(nbtCompound.getCompound("BlockState"));

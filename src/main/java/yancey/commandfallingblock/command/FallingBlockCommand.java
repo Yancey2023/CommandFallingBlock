@@ -20,7 +20,7 @@ import yancey.commandfallingblock.mixin.BlockStateArgumentAccessor;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-//#if MC>=12001
+//#if MC>=12000
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.text.Text;
 //#else
@@ -45,14 +45,14 @@ public class FallingBlockCommand {
     */
 
     @SuppressWarnings("SpellCheckingInspection")
-    //#if MC>=12001
+    //#if MC>=12000
     private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("command.commandfallingblock.fallingblock.failedToCalculate"));
     //#else
     //$$ private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("command.commandfallingblock.fallingblock.failedToCalculate"));
     //#endif
 
     public static void register(
-            //#if MC>=12001
+            //#if MC>=12000
             CommandRegistryAccess commandRegistryAccess,
             //#endif
             CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -62,7 +62,7 @@ public class FallingBlockCommand {
         Executor moveToPosByYMove = FallingBlockCommand::moveToPosByYMove;
         Executor moveFromPosToPosByMotionY = FallingBlockCommand::moveFromPosToPosByMotionY;
         Executor moveFromPosToPosByTick = FallingBlockCommand::moveFromPosToPosByTick;
-        //#if MC>=12001
+        //#if MC>=12000
         dispatcher.register(literal("fallingblock")
                 .requires(source -> source.hasPermissionLevel(2))
                 .then(add("moveFromPos", posStart(motion(hasGravity(blockAndAge(commandRegistryAccess, false, moveFromPos))))))
@@ -138,13 +138,13 @@ public class FallingBlockCommand {
     }
 
     private static RequiredArgumentBuilder<ServerCommandSource, BlockStateArgument> blockAndAge(
-            //#if MC>=12001
+            //#if MC>=12000
             CommandRegistryAccess commandRegistryAccess,
             //#endif
             boolean isBlockPos,
             Executor executor
     ) {
-        //#if MC>=12001
+        //#if MC>=12000
         BlockStateArgumentType blockStateArgumentType = BlockStateArgumentType.blockState(commandRegistryAccess);
         //#else
         //$$ BlockStateArgumentType blockStateArgumentType = BlockStateArgumentType.blockState();

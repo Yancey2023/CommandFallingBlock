@@ -18,7 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
-//#if MC>=12001
+//#if MC>=12000
 import net.minecraft.util.math.random.Random;
 //#else
 //$$ import java.util.Random;
@@ -39,7 +39,7 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
     //$$ private static final BlockEntityRenderDispatcher blockEntityRenderDispatcher = BlockEntityRenderDispatcher.INSTANCE;
     //#endif
 
-    //#if MC>=12001
+    //#if MC>=12000
     private final BlockRenderManager blockRenderManager;
     //#endif
 
@@ -58,7 +58,7 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
 
         this.shadowRadius = 0.5f;
 
-        //#if MC>=12001
+        //#if MC>=12000
         this.blockRenderManager = context.getBlockRenderManager();
         //#endif
     }
@@ -75,14 +75,14 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
         if (renderType == BlockRenderType.MODEL) {
             matrixStack.push();
             matrixStack.translate(-0.5, 0.0, -0.5);
-            //#if MC<12001
+            //#if MC<12000
             //$$ BlockRenderManager blockRenderManager = MinecraftClient.getInstance().getBlockRenderManager();
             //#endif
             blockRenderManager.getModelRenderer().render(
                     world,
                     blockRenderManager.getModel(blockState),
                     blockState,
-                    //#if MC>=12001
+                    //#if MC>=12000
                     BlockPos.ofFloored(entity.getX(), entity.getBoundingBox().maxY, entity.getZ()),
                     //#else
                     //$$ new BlockPos(entity.getX(), entity.getBoundingBox().maxY, entity.getZ()),
@@ -90,7 +90,7 @@ public class RenderBetterFallingBlock extends EntityRenderer<EntityBetterFalling
                     matrixStack,
                     vertexConsumerProvider.getBuffer(RenderLayers.getMovingBlockLayer(blockState)),
                     false,
-                    //#if MC>=12001
+                    //#if MC>=12000
                     Random.create(),
                     //#else
                     //$$ new Random(),
