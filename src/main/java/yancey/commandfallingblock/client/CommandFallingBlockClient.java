@@ -21,6 +21,10 @@ import net.minecraft.client.MinecraftClient;
 //$$ import net.minecraft.client.world.ClientWorld;
 //#endif
 
+//#if MC>=12102
+import net.minecraft.entity.SpawnReason;
+//#endif
+
 @Environment(EnvType.CLIENT)
 public class CommandFallingBlockClient implements ClientModInitializer {
 
@@ -30,7 +34,11 @@ public class CommandFallingBlockClient implements ClientModInitializer {
         //#if MC>=12005
         ClientPlayNetworking.registerGlobalReceiver(SummonFallingBlockPayloadS2C.ID, (payload, context) ->
                 MinecraftClient.getInstance().execute(() -> {
-                    EntityBetterFallingBlock entity = EntityBetterFallingBlock.BETTER_FALLING_BLOCK.create(context.player().clientWorld);
+                    //#if MC>=12102
+                    EntityBetterFallingBlock entity = EntityBetterFallingBlock.BETTER_FALLING_BLOCK.create(context.player().clientWorld, SpawnReason.COMMAND);
+                    //#else
+                    //$$ EntityBetterFallingBlock entity = EntityBetterFallingBlock.BETTER_FALLING_BLOCK.create(context.player().clientWorld);
+                    //#endif
                     if (entity != null) {
                         entity.onSpawnPacket(payload);
                         context.player().clientWorld.addEntity(entity);

@@ -1,5 +1,5 @@
 {
   "entity.commandfallingblock.better_falling_block": "下落的方块",
   "entity.commandfallingblock.better_falling_block_type": "下落的%s",
-  "command.commandfallingblock.fallingblock.failedToCalculate" :  "计算失败,掉落方块不可能运动到目标位置"
+  "command.commandfallingblock.fallingblock.failedToCalculate" :  "计算失败，掉落方块不可能运动到目标位置"
 }

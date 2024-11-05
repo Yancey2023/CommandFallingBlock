@@ -29,8 +29,8 @@ public class DataBlock {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    //#if MC>=12000
-    public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
+    //#if MC>=12000&&MC<12102
+    //$$ public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
     //#endif
     public final BlockState blockState;
     public final NbtCompound nbtCompound;
@@ -41,8 +41,10 @@ public class DataBlock {
     }
 
     public DataBlock(NbtCompound nbtCompound) {
-        //#if MC>=12000
-        blockState = NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState"));
+        //#if MC>=12102
+        blockState = NbtHelper.toBlockState(Registries.BLOCK, nbtCompound.getCompound("BlockState"));
+        //#elseif MC>=12000
+        //$$ blockState = NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState"));
         //#else
         //$$ blockState = NbtHelper.toBlockState(nbtCompound.getCompound("BlockState"));
         //#endif

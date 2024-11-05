@@ -31,6 +31,8 @@ val fabricApiVersion = when (mcVersion) {
     12006 -> "0.100.8+1.20.6"
     12100 -> "0.102.0+1.21"
     12101 -> "0.105.0+1.21.1"
+    12102 -> "0.106.1+1.21.2"
+    12103 -> "0.107.0+1.21.3"
     else -> throw UnsupportedOperationException()
 }
 
@@ -65,7 +67,6 @@ dependencies {
         for (module in fabricApiModules) {
             val dep = fabricApi.module(module, fabricApiVersion)
             modImplementation(dep)
-            "include"(dep)
         }
     }
 }

@@ -42,6 +42,11 @@ import java.util.Objects;
 import net.minecraft.entity.damage.DamageSource;
 //#endif
 
+//#if MC>=12102
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+//#endif
+
 public class EntityBetterFallingBlock extends Entity {
 
     //#if MC>=12000
@@ -76,8 +81,10 @@ public class EntityBetterFallingBlock extends Entity {
                     //$$ .trackedUpdateRate(20)
                     //#endif
 
-                    //#if MC>=12000
-                    .build(ID_BETTER_FALLING_BLOCK.toString());
+                    //#if MC>=12102
+                    .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, ID_BETTER_FALLING_BLOCK));
+                    //#elseif MC>=12000
+                    //$$ .build(ID_BETTER_FALLING_BLOCK.toString());
                     //#else
                     //$$ .build();
                     //#endif
@@ -272,6 +279,14 @@ public class EntityBetterFallingBlock extends Entity {
     //$$ public boolean handleFallDamage(float fallDistance, float damageMultiplier) {
     //$$     return false;
     //$$ }
+    //#endif
+
+
+    //#if MC>=12102
+    @Override
+    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+        return false;
+    }
     //#endif
 
     @Override
