@@ -116,9 +116,7 @@ public class EntityBetterFallingBlock extends Entity {
         this.tickMove = tickMove;
         this.age = age;
         setNoGravity(hasNoGravity);
-        if (timeFalling >= 0) {
-            noClip = true;
-        }
+        noClip = tickMove >= 0;
     }
 
     @Override
@@ -311,15 +309,32 @@ public class EntityBetterFallingBlock extends Entity {
         //#else
         //$$ setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound.getCompound("BlockPosEnd")));
         //#endif
-        if (tickMove >= 0) {
-            noClip = true;
+        noClip = tickMove >= 0;
+        if (dataBlock.nbtCompound != null &&
+                dataBlock.blockState.getRenderType() != BlockRenderType.MODEL &&
+                dataBlock.blockState.getBlock() instanceof BlockEntityProvider
+        ) {
+            //#if MC>=11802
+            blockEntity = dataBlock.createBlockEntity(getWorld(), getFallingBlockPos());
+            //#else
+            //$$ blockEntity = dataBlock.createBlockEntity(world, getFallingBlockPos());
+            //#endif
+
+            if (blockEntity != null) {
+                try {
+                    //#if MC>=12005
+                    blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
+                    //#elseif MC>=11802
+                    //$$ blockEntity.readNbt(dataBlock.nbtCompound);
+                    //#else
+                    //$$ blockEntity.setLocation(null, getFallingBlockPos());
+                    //$$ blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
+                    //#endif
+                } catch (Exception e) {
+                    LOGGER.warn("Failed to load block entity", e);
+                }
+            }
         }
-        Block block = dataBlock.blockState.getBlock();
-        //#if MC>=11802
-        blockEntity = dataBlock.createBlockEntity(getWorld(), getFallingBlockPos());
-        //#else
-        //$$ blockEntity = dataBlock.createBlockEntity(world, getFallingBlockPos());
-        //#endif
     }
 
     @Override
@@ -344,10 +359,12 @@ public class EntityBetterFallingBlock extends Entity {
         //#endif
     }
 
-    @Override
-    public boolean entityDataRequiresOperator() {
-        return true;
-    }
+    //#if MC<12104
+    //$$ @Override
+    //$$ public boolean entityDataRequiresOperator() {
+    //$$     return true;
+    //$$ }
+    //#endif
 
     //#if MC<12000
     //$$ @Override
@@ -357,7 +374,6 @@ public class EntityBetterFallingBlock extends Entity {
     //#endif
 
     public void onSpawnPacket(SummonFallingBlockPayloadS2C payload) {
-
         //#if MC>=12000
         getTrackedPosition().setPos(payload.pos);
         //#else
@@ -381,19 +397,31 @@ public class EntityBetterFallingBlock extends Entity {
         this.intersectionChecked = true;
         setFallingBlockPos(payload.blockPosEnd);
         setNoGravity(payload.hasNoGravity);
-        if (tickMove >= 0) {
-            noClip = true;
-        }
-        Block block = dataBlock.blockState.getBlock();
+        noClip = tickMove >= 0;
         if (dataBlock.nbtCompound != null &&
                 dataBlock.blockState.getRenderType() != BlockRenderType.MODEL &&
-                block instanceof BlockEntityProvider
+                dataBlock.blockState.getBlock() instanceof BlockEntityProvider
         ) {
             //#if MC>=11802
             blockEntity = dataBlock.createBlockEntity(getWorld(), getFallingBlockPos());
             //#else
             //$$ blockEntity = dataBlock.createBlockEntity(world, getFallingBlockPos());
             //#endif
+
+            if (blockEntity != null) {
+                try {
+                    //#if MC>=12005
+                    blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
+                    //#elseif MC>=11802
+                    //$$ blockEntity.readNbt(dataBlock.nbtCompound);
+                    //#else
+                    //$$ blockEntity.setLocation(null, getFallingBlockPos());
+                    //$$ blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
+                    //#endif
+                } catch (Exception e) {
+                    LOGGER.warn("Failed to load block entity", e);
+                }
+            }
         }
     }
 

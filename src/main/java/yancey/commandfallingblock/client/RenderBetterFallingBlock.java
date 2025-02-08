@@ -39,6 +39,10 @@ import net.minecraft.world.EmptyBlockRenderView;
 //$$ import net.minecraft.world.World;
 //#endif
 
+//#if MC>=12104
+import net.minecraft.client.render.block.entity.BlockEntityRenderer;
+//#endif
+
 @Environment(value = EnvType.CLIENT)
 public class RenderBetterFallingBlock
         //#if MC>=12102
@@ -88,12 +92,17 @@ public class RenderBetterFallingBlock
     @Override
     public void updateRenderState(EntityBetterFallingBlock entity, BetterFallingBlockEntityRenderState state, float tickDelta) {
         super.updateRenderState(entity, state, tickDelta);
+        //#if MC>=12104
+        state.tickDelta = tickDelta;
+        //#endif
         state.fallingBlockPos = entity.getFallingBlockPos();
         state.currentPos = BlockPos.ofFloored(entity.getX(), entity.getBoundingBox().maxY, entity.getZ());
         state.blockState = entity.dataBlock.blockState;
         state.world = entity.getWorld();
         state.blockEntity = entity.blockEntity;
-        state.blockEntity.setWorld(entity.getWorld());
+        if (state.blockEntity != null) {
+            state.blockEntity.setWorld(entity.getWorld());
+        }
     }
 
     //#endif
@@ -169,10 +178,22 @@ public class RenderBetterFallingBlock
             //#else
             //$$ entity.blockEntity.setLocation(world, entity.getFallingBlockPos());
             //#endif
-            matrixStack.push();
-            matrixStack.translate(-0.5, 0.0, -0.5);
-            blockEntityRenderDispatcher.renderEntity(blockEntity, matrixStack, vertexConsumerProvider, light, OverlayTexture.DEFAULT_UV);
-            matrixStack.pop();
+
+            //#if MC>=12104
+            BlockEntityRenderer<BlockEntity> blockEntityBlockEntityRenderer = blockEntityRenderDispatcher.get(blockEntity);
+            if (blockEntityBlockEntityRenderer != null) {
+                matrixStack.push();
+                matrixStack.translate(-0.5, 0.0, -0.5);
+                blockEntityBlockEntityRenderer.render(blockEntity, renderState.tickDelta, matrixStack, vertexConsumerProvider, light, OverlayTexture.DEFAULT_UV);
+                matrixStack.pop();
+            }
+            //#else
+            //$$ matrixStack.push();
+            //$$ matrixStack.translate(-0.5, 0.0, -0.5);
+            //$$ blockEntityRenderDispatcher.renderEntity(blockEntity, matrixStack, vertexConsumerProvider, light, OverlayTexture.DEFAULT_UV);
+            //$$ matrixStack.pop();
+            //#endif
+
         } else {
             return;
         }
@@ -193,6 +214,9 @@ public class RenderBetterFallingBlock
 
     //#if MC>=12102
     public static class BetterFallingBlockEntityRenderState extends EntityRenderState {
+        //#if MC>=12104
+        public float tickDelta;
+        //#endif
         public BlockPos fallingBlockPos;
         public BlockPos currentPos;
         public BlockState blockState;
@@ -200,6 +224,9 @@ public class RenderBetterFallingBlock
         public BlockEntity blockEntity;
 
         public BetterFallingBlockEntityRenderState() {
+            //#if MC>=12104
+            this.tickDelta = 0;
+            //#endif
             this.fallingBlockPos = BlockPos.ORIGIN;
             this.currentPos = BlockPos.ORIGIN;
             this.blockState = Blocks.SAND.getDefaultState();

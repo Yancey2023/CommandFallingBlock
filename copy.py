@@ -1,7 +1,7 @@
 import os
 import shutil
 
-modVersion = '1.9'
+modVersion = '1.10'
 mcVersions = [
     "1.16.5-fabric",
     "1.18.2-fabric",
@@ -15,7 +15,8 @@ mcVersions = [
     "1.21-fabric",
     "1.21.1-fabric",
     "1.21.2-fabric",
-    "1.21.3-fabric"
+    "1.21.3-fabric",
+    "1.21.4-fabric"
 ]
 
 release_dest = "./build/libs/release"
