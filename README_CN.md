@@ -14,7 +14,7 @@ CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来�
 
 - `fallingblock moveFromPos <posStart> <motion> <hasGravity> <block> [age]`  
   `fallingblock moveFromBlockPos <posStart> <motion> <hasGravity> <block> [age]`  
-  类似于原版掉落方块的效果，碰到障碍物会停止，并且控制初速度和是否受重力影响
+  类似于原版下落方块的效果，碰到障碍物会停止，并且控制初速度和是否受重力影响
 
 
 - `fallingblock moveFromPosByTick <posStart> <motion> <hasGravity> <tickMove> <block> [age]`  
@@ -46,10 +46,10 @@ CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来�
 
 #### 参数解释
 
-- `posStart` - 掉落方块生成位置的坐标
+- `posStart` - 下落方块生成位置的坐标
 
 
-- `posEnd` - 掉落方块目的地的坐标
+- `posEnd` - 下落方块目的地的坐标
 
 
 - `motion` - 刚生成的时候各个方向的初速度
@@ -70,7 +70,7 @@ CommandFallingBlock是一个fabric的模组，增加了`fallingblock`指令来�
 - `block` - 方块
 
 
-- `age` - 掉落方块实体的最大存在时间(单位是游戏刻)
+- `age` - 下落方块实体的最大存在时间(单位是游戏刻)
 
 ## 关于作者
 
@@ -81,16 +81,26 @@ Github: https://github.com/Yancey2023/CommandFallingBlock
 ## 你可能关心的问题
 
 - **中间有障碍物怎么办？**  
-  该模组的掉落方块不需要考虑碰撞箱对掉落方块的影响，毕竟可以穿墙的掉落方块谁不爱？
+  该模组的下落方块不需要考虑碰撞箱对下落方块的影响，毕竟可以穿墙的下落方块谁不爱？
 
 
 - **目的地下面是不是实体方块怎么办？**  
   到达目的地时没有接触地面？只接直接原地变成方块
 
 
-- **这个模组的掉落方块会和原版或其他模组冲突吗？**  
-  为了避免这个问题，我并没有使用原版的掉落方块，而是自己加了一个实体
+- **这个模组的下落方块会和原版或其他模组冲突吗？**  
+  为了避免这个问题，我并没有使用原版的下落方块，而是自己加了一个实体
 
 
-- **掉落方块会不会很卡**  
+- **下落方块会不会很卡**  
   如果输入的是目的地，就要通过模拟路径获得出发的位置，性能理论上会比直接使用summon指令要差，但是经过测试其实一点也不卡
+
+## 更多特性
+
+以下都是关于`fallingblock`命令生成的下落方块的特性，而不是原版的下落方块。
+
+- 它可以渲染使用实体渲染的方块，如箱子。
+
+- 它不会发送渲染用不到的NBT到客户端。比如告示牌中的文本NBT会发送，而箱子的物品NBT不会发送。
+
+- 当到达目的地并且需要放置方块时，会延迟2个游戏刻消失，以防止闪烁。
