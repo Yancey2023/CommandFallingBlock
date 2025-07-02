@@ -41,18 +41,26 @@ public class DataBlock {
     }
 
     public DataBlock(NbtCompound nbtCompound) {
-        //#if MC>=12102
-        blockState = NbtHelper.toBlockState(Registries.BLOCK, nbtCompound.getCompound("BlockState"));
+        //#if MC>=12105
+        this.blockState = nbtCompound.getCompound("BlockState")
+                .map(nbtCompound1 -> NbtHelper.toBlockState(Registries.BLOCK, nbtCompound1))
+                .orElse(Blocks.AIR.getDefaultState());
+        //#elseif MC>=12102
+        //$$ blockState = NbtHelper.toBlockState(Registries.BLOCK, nbtCompound.getCompound("BlockState"));
         //#elseif MC>=12000
         //$$ blockState = NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState"));
         //#else
         //$$ blockState = NbtHelper.toBlockState(nbtCompound.getCompound("BlockState"));
         //#endif
-        if (nbtCompound.contains("Compound")) {
-            this.nbtCompound = nbtCompound.getCompound("Compound");
-        } else {
-            this.nbtCompound = null;
-        }
+        //#if MC>=12105
+        this.nbtCompound = nbtCompound.getCompound("Compound").orElse(null);
+        //#else
+        //$$ if (nbtCompound.contains("Compound")) {
+        //$$     this.nbtCompound = nbtCompound.getCompound("Compound");
+        //$$ } else {
+        //$$     this.nbtCompound = null;
+        //$$ }
+        //#endif
     }
 
     public static DataBlock createByClientRenderData(PacketByteBuf packetByteBuf) {

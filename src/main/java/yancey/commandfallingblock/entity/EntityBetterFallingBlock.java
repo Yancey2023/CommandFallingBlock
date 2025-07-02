@@ -7,7 +7,6 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -47,6 +46,18 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 //#endif
 
+//#if MC>=12105
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Dynamic;
+
+import java.util.Optional;
+
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtElement;
+//#else
+//$$ import net.minecraft.nbt.NbtHelper;
+//#endif
+
 public class EntityBetterFallingBlock extends Entity {
 
     //#if MC>=12000
@@ -55,11 +66,13 @@ public class EntityBetterFallingBlock extends Entity {
     //$$ public static final Identifier ID_BETTER_FALLING_BLOCK = new Identifier(CommandFallingBlock.MOD_ID, "better_falling_block");
     //#endif
     public static final EntityType<EntityBetterFallingBlock> BETTER_FALLING_BLOCK =
+            //@formatter:off
             //#if MC>=12000
             EntityType.Builder.create((EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new, SpawnGroup.MISC)
-                    //#else
-                    //$$ FabricEntityTypeBuilder.create(SpawnGroup.MISC, (EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new)
-                    //#endif
+            //#else
+            //$$ FabricEntityTypeBuilder.create(SpawnGroup.MISC, (EntityType.EntityFactory<EntityBetterFallingBlock>) EntityBetterFallingBlock::new)
+            //#endif
+            //@formatter:on
 
                     //#if MC>=12005
                     .dimensions(0.98f, 0.98f)
@@ -81,6 +94,7 @@ public class EntityBetterFallingBlock extends Entity {
                     //$$ .trackedUpdateRate(20)
                     //#endif
 
+                    //@formatter:off
                     //#if MC>=12102
                     .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, ID_BETTER_FALLING_BLOCK));
                     //#elseif MC>=12000
@@ -88,6 +102,7 @@ public class EntityBetterFallingBlock extends Entity {
                     //#else
                     //$$ .build();
                     //#endif
+                    //@formatter:on
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -109,9 +124,9 @@ public class EntityBetterFallingBlock extends Entity {
         this.intersectionChecked = true;
         setPos(pos.x, pos.y, pos.z);
         setVelocity(motion);
-        prevX = pos.x;
-        prevY = pos.y;
-        prevZ = pos.z;
+        this.lastX = pos.x;
+        this.lastY = pos.y;
+        this.lastZ = pos.z;
         setFallingBlockPos(blockPosEnd);
         this.tickMove = tickMove;
         this.age = age;
@@ -198,7 +213,7 @@ public class EntityBetterFallingBlock extends Entity {
             setNoGravity(true);
             if (!world.isClient && age < 0) {
                 dataBlock.run((ServerWorld) world, blockPosEnd, false, false);
-                onLand(dataBlock.blockState.getBlock(), blockPosEnd);
+                onDestroyedOnLanding(dataBlock.blockState.getBlock(), blockPosEnd);
                 prepareDied = 1;
             }
             return;
@@ -212,7 +227,7 @@ public class EntityBetterFallingBlock extends Entity {
             BlockPos blockPos = DataFallingBlock.floorPos(getPos());
             boolean isConcretePowder = dataBlock.blockState.getBlock() instanceof ConcretePowderBlock;
             boolean isConcretePowderInWater = isConcretePowder && world.getFluidState(blockPos).isIn(FluidTags.WATER);
-            if (isConcretePowder && getVelocity().lengthSquared() > 1 && (blockHitResult = world.raycast(new RaycastContext(new Vec3d(prevX, prevY, prevZ), getPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.SOURCE_ONLY, this))).getType() != HitResult.Type.MISS && world.getFluidState(blockHitResult.getBlockPos()).isIn(FluidTags.WATER)) {
+            if (isConcretePowder && getVelocity().lengthSquared() > 1 && (blockHitResult = world.raycast(new RaycastContext(new Vec3d(this.lastX, this.lastY, this.lastZ), getPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.SOURCE_ONLY, this))).getType() != HitResult.Type.MISS && world.getFluidState(blockHitResult.getBlockPos()).isIn(FluidTags.WATER)) {
                 blockPos = blockHitResult.getBlockPos();
                 isConcretePowderInWater = true;
             }
@@ -220,7 +235,7 @@ public class EntityBetterFallingBlock extends Entity {
                 setVelocity(Vec3d.ZERO);
                 prepareDied = 1;
                 dataBlock.run((ServerWorld) world, blockPos, false, false);
-                onLand(dataBlock.blockState.getBlock(), blockPos);
+                onDestroyedOnLanding(dataBlock.blockState.getBlock(), blockPos);
             }
         }
         if (!hasNoGravity()) {
@@ -228,11 +243,11 @@ public class EntityBetterFallingBlock extends Entity {
         }
     }
 
-    public void onLand(Block block, BlockPos pos) {
+    public void onDestroyedOnLanding(Block block, BlockPos pos) {
         //#if MC>=11802
-        if (block instanceof LandingBlock) {
+        if (block instanceof Falling) {
             World world = getWorld();
-            ((LandingBlock) block).onLanding(world, pos, dataBlock.blockState, world.getBlockState(getBlockPos()), getFallingBlockEntity());
+            ((Falling) block).onLanding(world, pos, dataBlock.blockState, world.getBlockState(getBlockPos()), getFallingBlockEntity());
         }
         //#else
         //$$ if (block instanceof FallingBlock) {
@@ -249,7 +264,11 @@ public class EntityBetterFallingBlock extends Entity {
         World world = getWorld();
         //#endif
         FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, world);
-        ((FallingBlockEntityAccessor) entity).setBlock(dataBlock.blockState);
+        //#if MC>=12105
+        ((FallingBlockEntityAccessor) entity).setBlockState(dataBlock.blockState);
+        //#else
+        //$$ ((FallingBlockEntityAccessor) entity).setBlock(dataBlock.blockState);
+        //#endif
         //#if MC>=11802
         entity.setPosition(getPos());
         //#else
@@ -267,18 +286,21 @@ public class EntityBetterFallingBlock extends Entity {
         return entity;
     }
 
-    //#if MC>=11802
     @Override
-    public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
+    public boolean handleFallDamage(
+            //#if MC>=12105
+            double fallDistance,
+            //#else
+            //$$ float fallDistance,
+            //#endif
+            float damagePerDistance
+            //#if MC>=11802
+            ,
+            DamageSource damageSource
+            //#endif
+    ) {
         return false;
     }
-    //#else
-    //$$ @Override
-    //$$ public boolean handleFallDamage(float fallDistance, float damageMultiplier) {
-    //$$     return false;
-    //$$ }
-    //#endif
-
 
     //#if MC>=12102
     @Override
@@ -287,28 +309,7 @@ public class EntityBetterFallingBlock extends Entity {
     }
     //#endif
 
-    @Override
-    protected void writeCustomDataToNbt(NbtCompound nbtCompound) {
-        nbtCompound.put("DataBlock", dataBlock.writeToNBT());
-        nbtCompound.putInt("Time", timeFalling);
-        nbtCompound.putInt("TickMove", tickMove);
-        nbtCompound.putInt("Age", age);
-        nbtCompound.putInt("PrepareDied", prepareDied);
-        nbtCompound.put("BlockPosEnd", NbtHelper.fromBlockPos(getFallingBlockPos()));
-    }
-
-    @Override
-    protected void readCustomDataFromNbt(NbtCompound nbtCompound) {
-        dataBlock = new DataBlock(nbtCompound.getCompound("DataBlock"));
-        timeFalling = nbtCompound.getInt("Time");
-        tickMove = nbtCompound.getInt("TickMove");
-        age = nbtCompound.getInt("Age");
-        prepareDied = nbtCompound.getInt("PrepareDied");
-        //#if MC>=12005
-        setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound, "BlockPosEnd").orElse(BlockPos.ORIGIN));
-        //#else
-        //$$ setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound.getCompound("BlockPosEnd")));
-        //#endif
+    private void onDataBlockUpdate() {
         noClip = tickMove >= 0;
         if (dataBlock.nbtCompound != null &&
                 dataBlock.blockState.getRenderType() != BlockRenderType.MODEL &&
@@ -335,6 +336,75 @@ public class EntityBetterFallingBlock extends Entity {
                 }
             }
         }
+    }
+
+    //#if MC>=12105
+    public static Optional<BlockPos> toBlockPos(NbtCompound nbtCompound, String key) {
+        NbtElement optionalBlockPos = nbtCompound.get(key);
+        if (optionalBlockPos == null) {
+            LOGGER.warn("Failed to deserialize block pos");
+            return Optional.empty();
+        }
+        byte optionalBlockPosType = optionalBlockPos.getType();
+        Optional<BlockPos> optionalBlockPos1;
+        if (optionalBlockPosType == NbtElement.INT_ARRAY_TYPE) {
+            optionalBlockPos1 = BlockPos.CODEC.decode(new Dynamic<>(NbtOps.INSTANCE, optionalBlockPos))
+                    .resultOrPartial(error -> LOGGER.warn("Failed to deserialize block pos: {}", error))
+                    .map(Pair::getFirst);
+        } else if (optionalBlockPosType == NbtElement.COMPOUND_TYPE) {
+            NbtCompound nbtCompound1 = (NbtCompound) optionalBlockPos;
+            optionalBlockPos1 = Optional.of(new BlockPos(nbtCompound1.getInt("X", 0), nbtCompound1.getInt("Y", 0), nbtCompound1.getInt("Z", 0)));
+        } else {
+            LOGGER.warn("Failed to deserialize block pos");
+            return Optional.empty();
+        }
+        return optionalBlockPos1;
+    }
+
+    public static NbtElement fromBlockPos(BlockPos blockPos) {
+        return BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, blockPos)
+                .resultOrPartial(error -> LOGGER.warn("Failed to serialize block pos: {}", error))
+                .orElseGet(NbtOps.INSTANCE::emptyList);
+    }
+    //#endif
+
+    @Override
+    protected void writeCustomDataToNbt(NbtCompound nbtCompound) {
+        nbtCompound.put("DataBlock", dataBlock.writeToNBT());
+        nbtCompound.putInt("Time", timeFalling);
+        nbtCompound.putInt("TickMove", tickMove);
+        nbtCompound.putInt("Age", age);
+        nbtCompound.putInt("PrepareDied", prepareDied);
+        //#if MC>=12105
+        nbtCompound.put("BlockPosEnd", fromBlockPos(getBlockPos()));
+        //#else
+        //$$ nbtCompound.put("BlockPosEnd", NbtHelper.fromBlockPos(getFallingBlockPos()));
+        //#endif
+    }
+
+    @Override
+    protected void readCustomDataFromNbt(NbtCompound nbtCompound) {
+        //#if MC>=12105
+        dataBlock = nbtCompound.getCompound("DataBlock").map(DataBlock::new).orElse(new DataBlock(Blocks.SAND.getDefaultState(), null));
+        timeFalling = nbtCompound.getInt("Time", 0);
+        tickMove = nbtCompound.getInt("TickMove", -1);
+        age = nbtCompound.getInt("Age", -1);
+        prepareDied = nbtCompound.getInt("PrepareDied", -1);
+        //#else
+        //$$ dataBlock = new DataBlock(nbtCompound.getCompound("DataBlock"));
+        //$$ timeFalling = nbtCompound.getInt("Time");
+        //$$ tickMove = nbtCompound.getInt("TickMove");
+        //$$ age = nbtCompound.getInt("Age");
+        //$$ prepareDied = nbtCompound.getInt("PrepareDied");
+        //#endif
+        //#if MC>=12105
+        setFallingBlockPos(toBlockPos(nbtCompound, "BlockPosEnd").orElse(BlockPos.ORIGIN));
+        //#elseif MC>=12005
+        //$$ setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound, "BlockPosEnd").orElse(BlockPos.ORIGIN));
+        //#else
+        //$$ setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound.getCompound("BlockPosEnd")));
+        //#endif
+        onDataBlockUpdate();
     }
 
     @Override
@@ -397,32 +467,7 @@ public class EntityBetterFallingBlock extends Entity {
         this.intersectionChecked = true;
         setFallingBlockPos(payload.blockPosEnd);
         setNoGravity(payload.hasNoGravity);
-        noClip = tickMove >= 0;
-        if (dataBlock.nbtCompound != null &&
-                dataBlock.blockState.getRenderType() != BlockRenderType.MODEL &&
-                dataBlock.blockState.getBlock() instanceof BlockEntityProvider
-        ) {
-            //#if MC>=11802
-            blockEntity = dataBlock.createBlockEntity(getWorld(), getFallingBlockPos());
-            //#else
-            //$$ blockEntity = dataBlock.createBlockEntity(world, getFallingBlockPos());
-            //#endif
-
-            if (blockEntity != null) {
-                try {
-                    //#if MC>=12005
-                    blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
-                    //#elseif MC>=11802
-                    //$$ blockEntity.readNbt(dataBlock.nbtCompound);
-                    //#else
-                    //$$ blockEntity.setLocation(null, getFallingBlockPos());
-                    //$$ blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
-                    //#endif
-                } catch (Exception e) {
-                    LOGGER.warn("Failed to load block entity", e);
-                }
-            }
-        }
+        onDataBlockUpdate();
     }
 
 }
