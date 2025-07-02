@@ -28,6 +28,7 @@ preprocess {
     val fabric12103 = createNode("1.21.3-fabric", 12103, "yarn")
     val fabric12104 = createNode("1.21.4-fabric", 12104, "yarn")
     val fabric12105 = createNode("1.21.5-fabric", 12105, "yarn")
+    val fabric12106 = createNode("1.21.6-fabric", 12106, "yarn")
 
     // And then you need to tell the preprocessor which versions it should directly convert between.
     // This should form a directed graph with no cycles (i.e. a tree), which the preprocessor will then traverse to
@@ -37,6 +38,7 @@ preprocess {
     // mappings (but on different Minecraft versions, e.g. 1.12.2 forge to 1.8.9 forge, or 1.16.2 fabric to 1.18 fabric)
     // but not both at the same time, i.e. you cannot go straight from 1.12.2 forge to 1.16.2 fabric, you need to go via
     // an intermediary 1.16.2 forge project which has something in common with both.
+    fabric12106.link(fabric12105)
     fabric12105.link(fabric12104)
     fabric12104.link(fabric12103)
     fabric12103.link(fabric12102)
