@@ -8,13 +8,13 @@ import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
 public class DataFallingBlock {
 
-    public BlockPos blockPosEnd;
-    public DataBlock dataBlock;
-    public Vec3d pos;
-    public Vec3d motion;
-    public boolean hasGravity;
-    public int tickMove;
-    public int age;
+    public final BlockPos blockPosEnd;
+    public final DataBlock dataBlock;
+    public final Vec3d pos;
+    public final Vec3d motion;
+    public final boolean hasGravity;
+    public final int tickMove;
+    public final int age;
 
     public DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d pos, Vec3d motion, boolean hasGravity, int tickMove, int age) {
         this.blockPosEnd = blockPosEnd;

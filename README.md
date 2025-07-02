@@ -6,7 +6,7 @@ English | [简体中文](README_CN.md)
 
 CommandFallingBlock, a fabric mod in minecraft, adds `fallingblock` command to summon falling block conveniently.
 
-supported minecraft versions: `1.16.5`, `1.18.2`, `1.20.*`, `1.21`, `1.21.1`, `1.21.2`, `1.21.3`, `1.21.4`
+supported minecraft versions: `1.16.5`, `1.18.2`, `1.20.*`, `1.21`, `1.21.1`, `1.21.2`, `1.21.3`, `1.21.4`, `1.21.5`, `1.21.6`, `1.21.7`
 
 ## How to use
 

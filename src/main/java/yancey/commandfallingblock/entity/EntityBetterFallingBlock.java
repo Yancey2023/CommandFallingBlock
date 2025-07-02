@@ -6,7 +6,6 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -46,16 +45,22 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 //#endif
 
-//#if MC>=12105
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
-
-import java.util.Optional;
-
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtElement;
+//#if MC>=12106
+//#elseif MC>=12105
+//$$ import com.mojang.datafixers.util.Pair;
+//$$ import com.mojang.serialization.Dynamic;
+//$$ import java.util.Optional;
+//$$ import net.minecraft.nbt.NbtOps;
+//$$ import net.minecraft.nbt.NbtElement;
 //#else
 //$$ import net.minecraft.nbt.NbtHelper;
+//#endif
+
+//#if MC>=12106
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
+//#else
+//$$ import net.minecraft.nbt.NbtCompound;
 //#endif
 
 public class EntityBetterFallingBlock extends Entity {
@@ -105,6 +110,9 @@ public class EntityBetterFallingBlock extends Entity {
                     //@formatter:on
 
     private static final Logger LOGGER = LogUtils.getLogger();
+    //#if MC>=12105
+    private static final BlockState DEFAULT_BLOCK_STATE = Blocks.SAND.getDefaultState();
+    //#endif
 
     public BlockPos blockPosEnd;
     public DataBlock dataBlock;
@@ -212,7 +220,7 @@ public class EntityBetterFallingBlock extends Entity {
             setVelocity(Vec3d.ZERO);
             setNoGravity(true);
             if (!world.isClient && age < 0) {
-                dataBlock.run((ServerWorld) world, blockPosEnd, false, false);
+                dataBlock.run(LOGGER, (ServerWorld) world, blockPosEnd, false, false);
                 onDestroyedOnLanding(dataBlock.blockState.getBlock(), blockPosEnd);
                 prepareDied = 1;
             }
@@ -234,7 +242,7 @@ public class EntityBetterFallingBlock extends Entity {
             if (isOnGround() || isConcretePowderInWater) {
                 setVelocity(Vec3d.ZERO);
                 prepareDied = 1;
-                dataBlock.run((ServerWorld) world, blockPos, false, false);
+                dataBlock.run(LOGGER, (ServerWorld) world, blockPos, false, false);
                 onDestroyedOnLanding(dataBlock.blockState.getBlock(), blockPos);
             }
         }
@@ -315,97 +323,107 @@ public class EntityBetterFallingBlock extends Entity {
                 dataBlock.blockState.getRenderType() != BlockRenderType.MODEL &&
                 dataBlock.blockState.getBlock() instanceof BlockEntityProvider
         ) {
-            //#if MC>=11802
-            blockEntity = dataBlock.createBlockEntity(getWorld(), getFallingBlockPos());
+            //#if MC>=12005
+            blockEntity = dataBlock.createBlockEntity(LOGGER, getWorld(), getFallingBlockPos());
+            //#elseif MC>=11802
+            //$$ blockEntity = dataBlock.createBlockEntity(LOGGER, getFallingBlockPos());
             //#else
-            //$$ blockEntity = dataBlock.createBlockEntity(world, getFallingBlockPos());
+            //$$ blockEntity = dataBlock.createBlockEntity(LOGGER, world, getFallingBlockPos());
             //#endif
-
-            if (blockEntity != null) {
-                try {
-                    //#if MC>=12005
-                    blockEntity.read(dataBlock.nbtCompound, getRegistryManager());
-                    //#elseif MC>=11802
-                    //$$ blockEntity.readNbt(dataBlock.nbtCompound);
-                    //#else
-                    //$$ blockEntity.setLocation(null, getFallingBlockPos());
-                    //$$ blockEntity.fromTag(dataBlock.blockState, dataBlock.nbtCompound);
-                    //#endif
-                } catch (Exception e) {
-                    LOGGER.warn("Failed to load block entity", e);
-                }
-            }
         }
     }
 
-    //#if MC>=12105
-    public static Optional<BlockPos> toBlockPos(NbtCompound nbtCompound, String key) {
-        NbtElement optionalBlockPos = nbtCompound.get(key);
-        if (optionalBlockPos == null) {
-            LOGGER.warn("Failed to deserialize block pos");
-            return Optional.empty();
-        }
-        byte optionalBlockPosType = optionalBlockPos.getType();
-        Optional<BlockPos> optionalBlockPos1;
-        if (optionalBlockPosType == NbtElement.INT_ARRAY_TYPE) {
-            optionalBlockPos1 = BlockPos.CODEC.decode(new Dynamic<>(NbtOps.INSTANCE, optionalBlockPos))
-                    .resultOrPartial(error -> LOGGER.warn("Failed to deserialize block pos: {}", error))
-                    .map(Pair::getFirst);
-        } else if (optionalBlockPosType == NbtElement.COMPOUND_TYPE) {
-            NbtCompound nbtCompound1 = (NbtCompound) optionalBlockPos;
-            optionalBlockPos1 = Optional.of(new BlockPos(nbtCompound1.getInt("X", 0), nbtCompound1.getInt("Y", 0), nbtCompound1.getInt("Z", 0)));
-        } else {
-            LOGGER.warn("Failed to deserialize block pos");
-            return Optional.empty();
-        }
-        return optionalBlockPos1;
-    }
-
-    public static NbtElement fromBlockPos(BlockPos blockPos) {
-        return BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, blockPos)
-                .resultOrPartial(error -> LOGGER.warn("Failed to serialize block pos: {}", error))
-                .orElseGet(NbtOps.INSTANCE::emptyList);
-    }
+    //#if MC>=12105&&MC<12106
+    //$$ public static Optional<BlockPos> toBlockPos(NbtCompound nbtCompound, String key) {
+    //$$     NbtElement optionalBlockPos = nbtCompound.get(key);
+    //$$     if (optionalBlockPos == null) {
+    //$$         LOGGER.warn("Failed to deserialize block pos");
+    //$$         return Optional.empty();
+    //$$     }
+    //$$     byte optionalBlockPosType = optionalBlockPos.getType();
+    //$$     Optional<BlockPos> optionalBlockPos1;
+    //$$     if (optionalBlockPosType == NbtElement.INT_ARRAY_TYPE) {
+    //$$         optionalBlockPos1 = BlockPos.CODEC.decode(new Dynamic<>(NbtOps.INSTANCE, optionalBlockPos))
+    //$$                 .resultOrPartial(error -> LOGGER.warn("Failed to deserialize block pos: {}", error))
+    //$$                 .map(Pair::getFirst);
+    //$$     } else if (optionalBlockPosType == NbtElement.COMPOUND_TYPE) {
+    //$$         NbtCompound nbtCompound1 = (NbtCompound) optionalBlockPos;
+    //$$         optionalBlockPos1 = Optional.of(new BlockPos(nbtCompound1.getInt("X", 0), nbtCompound1.getInt("Y", 0), nbtCompound1.getInt("Z", 0)));
+    //$$     } else {
+    //$$         LOGGER.warn("Failed to deserialize block pos");
+    //$$         return Optional.empty();
+    //$$     }
+    //$$     return optionalBlockPos1;
+    //$$ }
+    //$$
+    //$$ public static NbtElement fromBlockPos(BlockPos blockPos) {
+    //$$     return BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, blockPos)
+    //$$             .resultOrPartial(error -> LOGGER.warn("Failed to serialize block pos: {}", error))
+    //$$             .orElseGet(NbtOps.INSTANCE::emptyList);
+    //$$ }
     //#endif
 
+    //#if MC>=12106
     @Override
-    protected void writeCustomDataToNbt(NbtCompound nbtCompound) {
-        nbtCompound.put("DataBlock", dataBlock.writeToNBT());
-        nbtCompound.putInt("Time", timeFalling);
-        nbtCompound.putInt("TickMove", tickMove);
-        nbtCompound.putInt("Age", age);
-        nbtCompound.putInt("PrepareDied", prepareDied);
-        //#if MC>=12105
-        nbtCompound.put("BlockPosEnd", fromBlockPos(getBlockPos()));
-        //#else
-        //$$ nbtCompound.put("BlockPosEnd", NbtHelper.fromBlockPos(getFallingBlockPos()));
-        //#endif
+    protected void writeCustomData(WriteView view) {
+        view.put("DataBlock", DataBlock.CODEC, this.dataBlock);
+        view.putInt("Time", this.timeFalling);
+        view.putInt("TickMove", this.tickMove);
+        view.putInt("Age", this.age);
+        view.putInt("PrepareDied", this.prepareDied);
+        view.put("BlockPosEnd", BlockPos.CODEC, this.getBlockPos());
     }
 
     @Override
-    protected void readCustomDataFromNbt(NbtCompound nbtCompound) {
-        //#if MC>=12105
-        dataBlock = nbtCompound.getCompound("DataBlock").map(DataBlock::new).orElse(new DataBlock(Blocks.SAND.getDefaultState(), null));
-        timeFalling = nbtCompound.getInt("Time", 0);
-        tickMove = nbtCompound.getInt("TickMove", -1);
-        age = nbtCompound.getInt("Age", -1);
-        prepareDied = nbtCompound.getInt("PrepareDied", -1);
-        //#else
-        //$$ dataBlock = new DataBlock(nbtCompound.getCompound("DataBlock"));
-        //$$ timeFalling = nbtCompound.getInt("Time");
-        //$$ tickMove = nbtCompound.getInt("TickMove");
-        //$$ age = nbtCompound.getInt("Age");
-        //$$ prepareDied = nbtCompound.getInt("PrepareDied");
-        //#endif
-        //#if MC>=12105
-        setFallingBlockPos(toBlockPos(nbtCompound, "BlockPosEnd").orElse(BlockPos.ORIGIN));
-        //#elseif MC>=12005
-        //$$ setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound, "BlockPosEnd").orElse(BlockPos.ORIGIN));
-        //#else
-        //$$ setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound.getCompound("BlockPosEnd")));
-        //#endif
+    protected void readCustomData(ReadView view) {
+        this.dataBlock = view.read("DataBlock", DataBlock.CODEC).orElse(new DataBlock(DEFAULT_BLOCK_STATE, null));
+        this.timeFalling = view.getInt("Time", 0);
+        this.tickMove = view.getInt("TickMove", -1);
+        this.age = view.getInt("Age", -1);
+        this.prepareDied = view.getInt("PrepareDied", -1);
+        setFallingBlockPos(view.read("BlockPosEnd", BlockPos.CODEC).orElse(BlockPos.ORIGIN));
         onDataBlockUpdate();
     }
+    //#else
+    //$$ @Override
+    //$$ protected void writeCustomDataToNbt(NbtCompound nbtCompound) {
+    //$$     nbtCompound.put("DataBlock", dataBlock.writeToNBT());
+    //$$     nbtCompound.putInt("Time", timeFalling);
+    //$$     nbtCompound.putInt("TickMove", tickMove);
+    //$$     nbtCompound.putInt("Age", age);
+    //$$     nbtCompound.putInt("PrepareDied", prepareDied);
+    //$$     //#if MC>=12105
+    //$$     nbtCompound.put("BlockPosEnd", fromBlockPos(getBlockPos()));
+    //$$     //#else
+    //$$     //$$ nbtCompound.put("BlockPosEnd", NbtHelper.fromBlockPos(getFallingBlockPos()));
+    //$$     //#endif
+    //$$ }
+    //$$
+    //$$ @Override
+    //$$ protected void readCustomDataFromNbt(NbtCompound nbtCompound) {
+    //$$     //#if MC>=12105
+    //$$     dataBlock = nbtCompound.getCompound("DataBlock").map(DataBlock::new).orElse(new DataBlock(DEFAULT_BLOCK_STATE, null));
+    //$$     timeFalling = nbtCompound.getInt("Time", 0);
+    //$$     tickMove = nbtCompound.getInt("TickMove", -1);
+    //$$     age = nbtCompound.getInt("Age", -1);
+    //$$     prepareDied = nbtCompound.getInt("PrepareDied", -1);
+    //$$     //#else
+    //$$     //$$ dataBlock = new DataBlock(nbtCompound.getCompound("DataBlock"));
+    //$$     //$$ timeFalling = nbtCompound.getInt("Time");
+    //$$     //$$ tickMove = nbtCompound.getInt("TickMove");
+    //$$     //$$ age = nbtCompound.getInt("Age");
+    //$$     //$$ prepareDied = nbtCompound.getInt("PrepareDied");
+    //$$     //#endif
+    //$$     //#if MC>=12105
+    //$$     setFallingBlockPos(toBlockPos(nbtCompound, "BlockPosEnd").orElse(BlockPos.ORIGIN));
+    //$$     //#elseif MC>=12005
+    //$$     //$$ setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound, "BlockPosEnd").orElse(BlockPos.ORIGIN));
+    //$$     //#else
+    //$$     //$$ setFallingBlockPos(NbtHelper.toBlockPos(nbtCompound.getCompound("BlockPosEnd")));
+    //$$     //#endif
+    //$$     onDataBlockUpdate();
+    //$$ }
+    //#endif
 
     @Override
     public boolean doesRenderOnFire() {

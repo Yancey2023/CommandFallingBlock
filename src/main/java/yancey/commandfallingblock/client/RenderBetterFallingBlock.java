@@ -324,5 +324,3 @@ public class RenderBetterFallingBlock
     //#endif
 
 }
-
-

@@ -3,31 +3,51 @@ package yancey.commandfallingblock.util;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
-//#if MC>=12005
-import net.minecraft.network.RegistryByteBuf;
-//#endif
-
-//#if MC>=12000
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryWrapper;
+//#if MC<11802||MC>=12005
+import net.minecraft.world.World;
 //#endif
 
 //#if MC>=11802
 import net.minecraft.world.WorldEvents;
 //#endif
 
+//#if MC>=12000&&MC<12106
+//$$ import net.minecraft.registry.Registries;
+//#endif
+
+//#if MC>=12000
+import net.minecraft.registry.RegistryWrapper;
+//#endif
+
+//#if MC>=12005
+import net.minecraft.network.RegistryByteBuf;
+//#endif
+
+//#if MC>=12106
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.storage.NbtReadView;
+import net.minecraft.util.ErrorReporter;
+//#else
+//$$ import net.minecraft.nbt.NbtHelper;
+//#endif
+
 public class DataBlock {
 
-    private static final Logger LOGGER = LogUtils.getLogger();
+    //#if MC>=12106
+    public static final Codec<DataBlock> CODEC = RecordCodecBuilder.create(
+            instance -> instance.group(
+                    BlockState.CODEC.fieldOf("BlockState").forGetter(datablock -> datablock.blockState),
+                    NbtCompound.CODEC.fieldOf("Compound").forGetter(datablock -> datablock.nbtCompound)
+            ).apply(instance, DataBlock::new)
+    );
+    //#endif
 
     //#if MC>=12000&&MC<12102
     //$$ public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
@@ -40,28 +60,30 @@ public class DataBlock {
         this.nbtCompound = nbtCompound;
     }
 
-    public DataBlock(NbtCompound nbtCompound) {
-        //#if MC>=12105
-        this.blockState = nbtCompound.getCompound("BlockState")
-                .map(nbtCompound1 -> NbtHelper.toBlockState(Registries.BLOCK, nbtCompound1))
-                .orElse(Blocks.AIR.getDefaultState());
-        //#elseif MC>=12102
-        //$$ blockState = NbtHelper.toBlockState(Registries.BLOCK, nbtCompound.getCompound("BlockState"));
-        //#elseif MC>=12000
-        //$$ blockState = NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState"));
-        //#else
-        //$$ blockState = NbtHelper.toBlockState(nbtCompound.getCompound("BlockState"));
-        //#endif
-        //#if MC>=12105
-        this.nbtCompound = nbtCompound.getCompound("Compound").orElse(null);
-        //#else
-        //$$ if (nbtCompound.contains("Compound")) {
-        //$$     this.nbtCompound = nbtCompound.getCompound("Compound");
-        //$$ } else {
-        //$$     this.nbtCompound = null;
-        //$$ }
-        //#endif
-    }
+    //#if MC<12106
+    //$$ public DataBlock(NbtCompound nbtCompound) {
+    //$$     //#if MC>=12105
+    //$$     this.blockState = nbtCompound.getCompound("BlockState")
+    //$$             .map(nbtCompound1 -> NbtHelper.toBlockState(Registries.BLOCK, nbtCompound1))
+    //$$             .orElse(Blocks.AIR.getDefaultState());
+    //$$     //#elseif MC>=12102
+    //$$     //$$ blockState = NbtHelper.toBlockState(Registries.BLOCK, nbtCompound.getCompound("BlockState"));
+    //$$     //#elseif MC>=12000
+    //$$     //$$ blockState = NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState"));
+    //$$     //#else
+    //$$     //$$ blockState = NbtHelper.toBlockState(nbtCompound.getCompound("BlockState"));
+    //$$     //#endif
+    //$$     //#if MC>=12105
+    //$$     this.nbtCompound = nbtCompound.getCompound("Compound").orElse(null);
+    //$$     //#else
+    //$$     //$$ if (nbtCompound.contains("Compound")) {
+    //$$     //$$     this.nbtCompound = nbtCompound.getCompound("Compound");
+    //$$     //$$ } else {
+    //$$     //$$     this.nbtCompound = null;
+    //$$     //$$ }
+    //$$     //#endif
+    //$$ }
+    //#endif
 
     public static DataBlock createByClientRenderData(PacketByteBuf packetByteBuf) {
         BlockState blockState = Block.getStateFromRawId(packetByteBuf.readInt());
@@ -73,14 +95,16 @@ public class DataBlock {
     }
 
 
-    public NbtCompound writeToNBT() {
-        NbtCompound nbtCompound = new NbtCompound();
-        nbtCompound.put("BlockState", NbtHelper.fromBlockState(blockState));
-        if (this.nbtCompound != null) {
-            nbtCompound.put("Compound", this.nbtCompound);
-        }
-        return nbtCompound;
-    }
+    //#if MC<12106
+    //$$ public NbtCompound writeToNBT() {
+    //$$     NbtCompound nbtCompound = new NbtCompound();
+    //$$     nbtCompound.put("BlockState", NbtHelper.fromBlockState(blockState));
+    //$$     if (this.nbtCompound != null) {
+    //$$         nbtCompound.put("Compound", this.nbtCompound);
+    //$$     }
+    //$$     return nbtCompound;
+    //$$ }
+    //#endif
 
     /**
      * write data used for render in client
@@ -89,6 +113,7 @@ public class DataBlock {
      * @param blockPos block position
      */
     public void writeClientRenderData(
+            Logger logger,
             //#if MC>=12005
             RegistryByteBuf buf,
             //#else
@@ -113,11 +138,11 @@ public class DataBlock {
                 return;
             }
             //#if MC>=12005
-            writeNbtToBlockEntity(buf.getRegistryManager(), blockEntity);
+            writeNbtToBlockEntity(logger, buf.getRegistryManager(), blockEntity);
             //#elseif MC>=11802
-            //$$ writeNbtToBlockEntity(blockEntity);
+            //$$ writeNbtToBlockEntity(logger, blockEntity);
             //#else
-            //$$ writeNbtToBlockEntity(blockPos, blockEntity);
+            //$$ writeNbtToBlockEntity(logger, blockPos, blockEntity);
             //#endif
             //#if MC>=12005
             NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt(buf.getRegistryManager());
@@ -135,7 +160,7 @@ public class DataBlock {
         buf.writeBoolean(false);
     }
 
-    public void run(ServerWorld world, BlockPos blockPos, boolean isDestroy, boolean isDropItem) {
+    public void run(Logger logger,ServerWorld world, BlockPos blockPos, boolean isDestroy, boolean isDropItem) {
         if (world == null || blockPos == null || blockState == null) {
             return;
         }
@@ -160,16 +185,22 @@ public class DataBlock {
             return;
         }
         //#if MC>=12005
-        writeNbtToBlockEntity(world.getRegistryManager(), blockEntity);
+        writeNbtToBlockEntity(logger, world.getRegistryManager(), blockEntity);
         //#elseif MC>=11802
-        //$$ writeNbtToBlockEntity(blockEntity);
+        //$$ writeNbtToBlockEntity(logger, blockEntity);
         //#else
-        //$$ writeNbtToBlockEntity(blockPos, blockEntity);
+        //$$ writeNbtToBlockEntity(logger, blockPos, blockEntity);
         //#endif
         blockEntity.markDirty();
     }
 
-    public BlockEntity createBlockEntity(World world, BlockPos blockPos) {
+    public BlockEntity createBlockEntity(
+            Logger logger,
+            //#if MC<11802||MC>=12005
+            World world,
+            //#endif
+            BlockPos blockPos
+    ) {
         if (blockState instanceof BlockEntityProvider) {
 
             //#if MC>=11802
@@ -180,11 +211,11 @@ public class DataBlock {
 
             if (blockEntity != null) {
                 //#if MC>=12005
-                writeNbtToBlockEntity(world.getRegistryManager(), blockEntity);
+                writeNbtToBlockEntity(logger, world.getRegistryManager(), blockEntity);
                 //#elseif MC>=11802
-                //$$ writeNbtToBlockEntity(blockEntity);
+                //$$ writeNbtToBlockEntity(logger, blockEntity);
                 //#else
-                //$$ writeNbtToBlockEntity(blockPos, blockEntity);
+                //$$ writeNbtToBlockEntity(logger, blockPos, blockEntity);
                 //#endif
             }
 
@@ -195,6 +226,7 @@ public class DataBlock {
     }
 
     public void writeNbtToBlockEntity(
+            Logger logger,
             //#if MC>=12005
             RegistryWrapper.WrapperLookup wrapperLookup,
             //#endif
@@ -206,17 +238,21 @@ public class DataBlock {
         if (nbtCompound == null) {
             return;
         }
-        try {
-            //#if MC>=12005
-            blockEntity.read(nbtCompound, wrapperLookup);
-            //#elseif MC>=11802
-            //$$ blockEntity.readNbt(nbtCompound);
-            //#else
-            //$$ blockEntity.setLocation(null, blockPos);
-            //$$ blockEntity.fromTag(blockState, nbtCompound);
-            //#endif
-        } catch (Exception e) {
-            LOGGER.warn("Failed to load block entity", e);
-        }
+        //#if MC>=12106
+        blockEntity.read(NbtReadView.create(new ErrorReporter.Logging(logger), wrapperLookup, nbtCompound));
+        //#else
+        //$$ try {
+        //$$     //#if MC>=12005
+        //$$     blockEntity.read(nbtCompound, wrapperLookup);
+        //$$     //#elseif MC>=11802
+        //$$     //$$ blockEntity.readNbt(nbtCompound);
+        //$$     //#else
+        //$$     //$$ blockEntity.setLocation(null, blockPos);
+        //$$     //$$ blockEntity.fromTag(blockState, nbtCompound);
+        //$$     //#endif
+        //$$ } catch (Exception e) {
+        //$$     logger.warn("Failed to load block entity", e);
+        //$$ }
+        //#endif
     }
 }
