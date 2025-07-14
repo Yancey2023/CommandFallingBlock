@@ -6,7 +6,7 @@ English | [简体中文](README_CN.md)
 
 CommandFallingBlock, a fabric mod in minecraft, adds `fallingblock` command to summon falling block conveniently.
 
-supported minecraft versions: `1.16.5`, `1.18.2`, `1.20.*`, `1.21`, `1.21.1`, `1.21.2`, `1.21.3`, `1.21.4`, `1.21.5`, `1.21.6`, `1.21.7`
+supported minecraft versions: `1.16.5`, `1.18.2`, `1.20.x`, `1.21 - 1.21.7`
 
 ## How to use
 
@@ -91,8 +91,8 @@ Github: https://github.com/Yancey2023/CommandFallingBlock
 
 
 - **Will the performance become worse?**  
-  If the input is the destination, the starting position needs to be obtained by simulating the path. Theoretically, the
-  performance will be worse than using the summon command directly, but after testing, it will not cause stuttering
+  If the destination is given as input, the starting position must be found by simulating the path. While theoretically
+  less performant than directly using the summon command, testing shows it doesn't cause stuttering.
 
 ## More feature
 

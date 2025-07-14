@@ -212,14 +212,14 @@ public class EntityBetterFallingBlock extends Entity {
         World world = getWorld();
         //#endif
         timeFalling++;
-        if (!world.isClient && timeFalling >= age && age >= 0) {
+        if (!world.isClient && timeFalling > age && age > 0) {
             discard();
             return;
         }
-        if (timeFalling >= tickMove + 1 && tickMove >= 0) {
+        if (timeFalling > tickMove && tickMove >= 0) {
             setVelocity(Vec3d.ZERO);
             setNoGravity(true);
-            if (!world.isClient && age < 0) {
+            if (!world.isClient && age <= 0) {
                 dataBlock.run(LOGGER, (ServerWorld) world, blockPosEnd, false, false);
                 onDestroyedOnLanding(dataBlock.blockState.getBlock(), blockPosEnd);
                 prepareDied = 1;
