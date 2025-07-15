@@ -34,6 +34,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.storage.NbtReadView;
 import net.minecraft.util.ErrorReporter;
+
+import java.util.Optional;
 //#else
 //$$ import net.minecraft.nbt.NbtHelper;
 //#endif
@@ -44,8 +46,8 @@ public class DataBlock {
     public static final Codec<DataBlock> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     BlockState.CODEC.fieldOf("BlockState").forGetter(datablock -> datablock.blockState),
-                    NbtCompound.CODEC.fieldOf("Compound").forGetter(datablock -> datablock.nbtCompound)
-            ).apply(instance, DataBlock::new)
+                    NbtCompound.CODEC.optionalFieldOf("Compound").forGetter(datablock -> Optional.ofNullable(datablock.nbtCompound))
+            ).apply(instance, (blockState, nbtCompound) -> new DataBlock(blockState, nbtCompound.orElse(null)))
     );
     //#endif
 
@@ -160,7 +162,7 @@ public class DataBlock {
         buf.writeBoolean(false);
     }
 
-    public void run(Logger logger,ServerWorld world, BlockPos blockPos, boolean isDestroy, boolean isDropItem) {
+    public void run(Logger logger, ServerWorld world, BlockPos blockPos, boolean isDestroy, boolean isDropItem) {
         if (world == null || blockPos == null || blockState == null) {
             return;
         }
