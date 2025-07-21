@@ -130,7 +130,7 @@ public class EntityBetterFallingBlock extends Entity {
         super(BETTER_FALLING_BLOCK, world);
         this.dataBlock = dataBlock;
         this.intersectionChecked = true;
-        setPos(pos.x, pos.y, pos.z);
+        setPosition(pos.x, pos.y, pos.z);
         setVelocity(motion);
         this.lastX = pos.x;
         this.lastY = pos.y;
