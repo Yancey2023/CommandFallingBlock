@@ -1,7 +1,7 @@
 import os
 import shutil
 
-modVersion = '1.11'
+modVersion = '1.12'
 mcVersions = [
     "1.16.5-fabric",
     "1.18.2-fabric",
