@@ -3,7 +3,7 @@ plugins {
     // Any project using `gg.essential.multi-version` must have a parent with this root plugin applied.
     // Advanced users may use multiple (potentially independent) multi-version trees in different sub-projects.
     // This is currently equivalent to applying `com.replaymod.preprocess-root`.
-    id("gg.essential.loom") version "1.9.+" apply false
+    id("gg.essential.loom") version "1.10.+" apply false
     id("gg.essential.multi-version.root")
 }
 
