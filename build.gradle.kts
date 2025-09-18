@@ -37,7 +37,7 @@ val fabricApiVersion = when (mcVersion) {
     12105 -> "0.128.1+1.21.5"
     12106 -> "0.128.2+1.21.6"
     12107 -> "0.129.0+1.21.7"
-    12108 -> "0.129.0+1.21.8"
+    12108 -> "0.133.4+1.21.8"
     else -> throw UnsupportedOperationException()
 }
 
