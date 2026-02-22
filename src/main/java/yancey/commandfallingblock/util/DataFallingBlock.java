@@ -6,25 +6,56 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
-public class DataFallingBlock {
+//#if MC >= 11802
+public record DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d pos, Vec3d motion, boolean hasGravity,
+                               int tickMove, int age) {
+//#else
+//$$ public class DataFallingBlock {
+//#endif
 
-    public final BlockPos blockPosEnd;
-    public final DataBlock dataBlock;
-    public final Vec3d pos;
-    public final Vec3d motion;
-    public final boolean hasGravity;
-    public final int tickMove;
-    public final int age;
-
-    public DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d pos, Vec3d motion, boolean hasGravity, int tickMove, int age) {
-        this.blockPosEnd = blockPosEnd;
-        this.dataBlock = dataBlock;
-        this.pos = pos;
-        this.motion = motion;
-        this.hasGravity = hasGravity;
-        this.tickMove = tickMove;
-        this.age = age;
-    }
+    //#if MC < 11802
+    //$$ public final BlockPos blockPosEnd;
+    //$$ public final DataBlock dataBlock;
+    //$$ public final Vec3d pos;
+    //$$ public final Vec3d motion;
+    //$$ public final boolean hasGravity;
+    //$$ public final int tickMove;
+    //$$ public final int age;
+    //$$
+    //$$ public DataFallingBlock(BlockPos blockPosEnd, DataBlock dataBlock, Vec3d pos, Vec3d motion, boolean hasGravity, int tickMove, int age) {
+    //$$     this.blockPosEnd = blockPosEnd;
+    //$$     this.dataBlock = dataBlock;
+    //$$     this.pos = pos;
+    //$$     this.motion = motion;
+    //$$     this.hasGravity = hasGravity;
+    //$$     this.tickMove = tickMove;
+    //$$     this.age = age;
+    //$$ }
+    //$$
+    //$$ public BlockPos blockPosEnd() {
+    //$$     return blockPosEnd;
+    //$$ }
+    //$$
+    //$$ public DataBlock dataBlock() {
+    //$$     return dataBlock;
+    //$$ }
+    //$$
+    //$$ public Vec3d pos() {
+    //$$     return pos;
+    //$$ }
+    //$$
+    //$$ public Vec3d motion() {
+    //$$     return motion;
+    //$$ }
+    //$$
+    //$$ public int tickMove() {
+    //$$     return tickMove;
+    //$$ }
+    //$$
+    //$$ public int age() {
+    //$$     return age;
+    //$$ }
+    //#endif
 
     public static DataFallingBlock moveFromPosByTick(DataBlock dataBlock, Vec3d posStart, Vec3d motionStart, boolean hasGravity, int tickMove, int age) {
         double x = posStart.x;

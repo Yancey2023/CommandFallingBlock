@@ -23,7 +23,12 @@ import net.minecraft.network.packet.CustomPayload;
 
 import static yancey.commandfallingblock.CommandFallingBlock.MOD_ID;
 
-public class SummonFallingBlockPayloadS2C
+//#if MC>=11802
+public record SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3d pos, Vec3d velocity, DataBlock dataBlock,
+                                           boolean hasNoGravity, int tickMove, BlockPos blockPosEnd)
+//#else
+//$$ public class SummonFallingBlockPayloadS2C
+//#endif
         //#if MC>=12005
         implements CustomPayload
         //#endif
@@ -32,7 +37,7 @@ public class SummonFallingBlockPayloadS2C
     private static final Logger LOGGER = LogUtils.getLogger();
 
     //#if MC>=12005
-    public static final CustomPayload.Id<SummonFallingBlockPayloadS2C> ID = new CustomPayload.Id<>(Identifier.of(MOD_ID, "summon_falling_block"));
+    public static final Id<SummonFallingBlockPayloadS2C> ID = new Id<>(Identifier.of(MOD_ID, "summon_falling_block"));
     public static final PacketCodec<RegistryByteBuf, SummonFallingBlockPayloadS2C> CODEC
             = PacketCodec.of(SummonFallingBlockPayloadS2C::encode, SummonFallingBlockPayloadS2C::decode);
     //#elseif MC>=12000
@@ -41,27 +46,61 @@ public class SummonFallingBlockPayloadS2C
     //$$ public static final Identifier ID = new Identifier(MOD_ID, "summon_falling_block");
     //#endif
 
-    public final int id;
-    public final UUID uuid;
-    public final Vec3d pos, velocity;
-    public final DataBlock dataBlock;
-    public final boolean hasNoGravity;
-    public final int tickMove;
-    public final BlockPos blockPosEnd;
-
-    public SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3d pos, Vec3d velocity, DataBlock dataBlock, boolean hasNoGravity, int tickMove, BlockPos blockPosEnd) {
-        this.id = id;
-        this.uuid = uuid;
-        this.pos = pos;
-        this.velocity = velocity;
-        this.dataBlock = dataBlock;
-        this.hasNoGravity = hasNoGravity;
-        this.tickMove = tickMove;
-        this.blockPosEnd = blockPosEnd;
-    }
+    //#if MC<11802
+    //$$ public final int id;
+    //$$ public final UUID uuid;
+    //$$ public final Vec3d pos, velocity;
+    //$$ public final DataBlock dataBlock;
+    //$$ public final boolean hasNoGravity;
+    //$$ public final int tickMove;
+    //$$ public final BlockPos blockPosEnd;
+    //$$
+    //$$ public SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3d pos, Vec3d velocity, DataBlock dataBlock, boolean hasNoGravity, int tickMove, BlockPos blockPosEnd) {
+    //$$     this.id = id;
+    //$$     this.uuid = uuid;
+    //$$     this.pos = pos;
+    //$$     this.velocity = velocity;
+    //$$     this.dataBlock = dataBlock;
+    //$$     this.hasNoGravity = hasNoGravity;
+    //$$     this.tickMove = tickMove;
+    //$$     this.blockPosEnd = blockPosEnd;
+    //$$ }
+    //$$
+    //$$ public int id() {
+    //$$     return id;
+    //$$ }
+    //$$
+    //$$ public UUID uuid() {
+    //$$     return uuid;
+    //$$ }
+    //$$
+    //$$ public Vec3d pos() {
+    //$$     return pos;
+    //$$ }
+    //$$
+    //$$ public Vec3d velocity() {
+    //$$     return velocity;
+    //$$ }
+    //$$
+    //$$ public DataBlock dataBlock() {
+    //$$     return dataBlock;
+    //$$ }
+    //$$
+    //$$ public boolean hasNoGravity() {
+    //$$     return hasNoGravity;
+    //$$ }
+    //$$
+    //$$ public int tickMove() {
+    //$$     return tickMove;
+    //$$ }
+    //$$
+    //$$ public BlockPos blockPosEnd() {
+    //$$     return blockPosEnd;
+    //$$ }
+    //#endif
 
     public SummonFallingBlockPayloadS2C(EntityBetterFallingBlock entity) {
-        this(entity.getId(), entity.getUuid(), entity.getPos(), entity.getVelocity(), entity.dataBlock, entity.hasNoGravity(), entity.tickMove, entity.blockPosEnd);
+        this(entity.getId(), entity.getUuid(), entity.getEntityPos(), entity.getVelocity(), entity.dataBlock, entity.hasNoGravity(), entity.tickMove, entity.blockPosEnd);
     }
 
     //#if MC>=12005

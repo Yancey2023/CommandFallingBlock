@@ -204,24 +204,29 @@ public class EntityBetterFallingBlock extends Entity {
             prepareDied--;
             return;
         }
-        if (dataBlock.blockState.isAir()) {
+        if (dataBlock.blockState().isAir()) {
             discard();
             return;
         }
         //#if MC>=11802
-        World world = getWorld();
+        World world = getEntityWorld();
         //#endif
         timeFalling++;
-        if (!world.isClient && timeFalling > age && age > 0) {
+        //#if MC>=12109
+        boolean isClient = world.isClient();
+        //#else
+        //$$ boolean isClient = world.isClient;
+        //#endif
+        if (!isClient && timeFalling > age && age > 0) {
             discard();
             return;
         }
         if (timeFalling > tickMove && tickMove >= 0) {
             setVelocity(Vec3d.ZERO);
             setNoGravity(true);
-            if (!world.isClient && age <= 0) {
+            if (!isClient && age <= 0) {
                 dataBlock.run(LOGGER, (ServerWorld) world, blockPosEnd, false, false);
-                onDestroyedOnLanding(dataBlock.blockState.getBlock(), blockPosEnd);
+                onDestroyedOnLanding(dataBlock.blockState().getBlock(), blockPosEnd);
                 prepareDied = 1;
             }
             return;
@@ -230,12 +235,12 @@ public class EntityBetterFallingBlock extends Entity {
             setVelocity(getVelocity().add(0, -0.04, 0));
         }
         move(MovementType.SELF, getVelocity());
-        if (tickMove < 0 && !world.isClient) {
+        if (tickMove < 0 && !isClient) {
             BlockHitResult blockHitResult;
-            BlockPos blockPos = DataFallingBlock.floorPos(getPos());
-            boolean isConcretePowder = dataBlock.blockState.getBlock() instanceof ConcretePowderBlock;
+            BlockPos blockPos = DataFallingBlock.floorPos(getEntityPos());
+            boolean isConcretePowder = dataBlock.blockState().getBlock() instanceof ConcretePowderBlock;
             boolean isConcretePowderInWater = isConcretePowder && world.getFluidState(blockPos).isIn(FluidTags.WATER);
-            if (isConcretePowder && getVelocity().lengthSquared() > 1 && (blockHitResult = world.raycast(new RaycastContext(new Vec3d(this.lastX, this.lastY, this.lastZ), getPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.SOURCE_ONLY, this))).getType() != HitResult.Type.MISS && world.getFluidState(blockHitResult.getBlockPos()).isIn(FluidTags.WATER)) {
+            if (isConcretePowder && getVelocity().lengthSquared() > 1 && (blockHitResult = world.raycast(new RaycastContext(new Vec3d(this.lastX, this.lastY, this.lastZ), getEntityPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.SOURCE_ONLY, this))).getType() != HitResult.Type.MISS && world.getFluidState(blockHitResult.getBlockPos()).isIn(FluidTags.WATER)) {
                 blockPos = blockHitResult.getBlockPos();
                 isConcretePowderInWater = true;
             }
@@ -243,7 +248,7 @@ public class EntityBetterFallingBlock extends Entity {
                 setVelocity(Vec3d.ZERO);
                 prepareDied = 1;
                 dataBlock.run(LOGGER, (ServerWorld) world, blockPos, false, false);
-                onDestroyedOnLanding(dataBlock.blockState.getBlock(), blockPos);
+                onDestroyedOnLanding(dataBlock.blockState().getBlock(), blockPos);
             }
         }
         if (!hasNoGravity()) {
@@ -254,8 +259,8 @@ public class EntityBetterFallingBlock extends Entity {
     public void onDestroyedOnLanding(Block block, BlockPos pos) {
         //#if MC>=11802
         if (block instanceof Falling) {
-            World world = getWorld();
-            ((Falling) block).onLanding(world, pos, dataBlock.blockState, world.getBlockState(getBlockPos()), getFallingBlockEntity());
+            World world = getEntityWorld();
+            ((Falling) block).onLanding(world, pos, dataBlock.blockState(), world.getBlockState(getBlockPos()), getFallingBlockEntity());
         }
         //#else
         //$$ if (block instanceof FallingBlock) {
@@ -269,16 +274,16 @@ public class EntityBetterFallingBlock extends Entity {
 
     public FallingBlockEntity getFallingBlockEntity() {
         //#if MC>=11802
-        World world = getWorld();
+        World world = getEntityWorld();
         //#endif
         FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, world);
         //#if MC>=12105
-        ((FallingBlockEntityAccessor) entity).setBlockState(dataBlock.blockState);
+        ((FallingBlockEntityAccessor) entity).setBlockState(dataBlock.blockState());
         //#else
-        //$$ ((FallingBlockEntityAccessor) entity).setBlock(dataBlock.blockState);
+        //$$ ((FallingBlockEntityAccessor) entity).setBlock(dataBlock.blockState());
         //#endif
         //#if MC>=11802
-        entity.setPosition(getPos());
+        entity.setPosition(getEntityPos());
         //#else
         //$$ Vec3d pos = getPos();
         //$$ entity.setPosition(pos.x, pos.y, pos.z);
@@ -288,7 +293,7 @@ public class EntityBetterFallingBlock extends Entity {
         entity.setVelocity(getVelocity());
         entity.setNoGravity(hasNoGravity());
         entity.age = age;
-        entity.blockEntityData = dataBlock.nbtCompound;
+        entity.blockEntityData = dataBlock.nbtCompound();
         entity.dropItem = false;
         entity.noClip = noClip;
         return entity;
@@ -319,12 +324,14 @@ public class EntityBetterFallingBlock extends Entity {
 
     private void onDataBlockUpdate() {
         noClip = tickMove >= 0;
-        if (dataBlock.nbtCompound != null &&
-                dataBlock.blockState.getRenderType() != BlockRenderType.MODEL &&
-                dataBlock.blockState.getBlock() instanceof BlockEntityProvider
+        if (dataBlock.nbtCompound() != null &&
+                //#if MC<12104
+                //$$ dataBlock.blockState().getRenderType() != BlockRenderType.MODEL &&
+                //#endif
+                dataBlock.blockState().getBlock() instanceof BlockEntityProvider
         ) {
             //#if MC>=12005
-            blockEntity = dataBlock.createBlockEntity(LOGGER, getWorld(), getFallingBlockPos());
+            blockEntity = dataBlock.createBlockEntity(LOGGER, getEntityWorld(), getFallingBlockPos());
             //#elseif MC>=11802
             //$$ blockEntity = dataBlock.createBlockEntity(LOGGER, getFallingBlockPos());
             //#else
@@ -434,16 +441,15 @@ public class EntityBetterFallingBlock extends Entity {
     @SuppressWarnings("SpellCheckingInspection")
     public void populateCrashReport(CrashReportSection section) {
         super.populateCrashReport(section);
-        section.add("Immitating BlockState", dataBlock.blockState.toString());
+        section.add("Immitating BlockState", dataBlock.blockState().toString());
     }
 
     @Override
-    @SuppressWarnings("SpellCheckingInspection")
     protected Text getDefaultName() {
         //#if MC>=12000
-        return Text.translatable("entity.commandfallingblock.better_falling_block_type", dataBlock.blockState.getBlock().getName());
+        return Text.translatable("entity.commandfallingblock.better_falling_block_type", dataBlock.blockState().getBlock().getName());
         //#else
-        //$$ return new TranslatableText("entity.commandfallingblock.better_falling_block_type", String.valueOf(dataBlock.blockState.getBlock().getName()));
+        //$$ return new TranslatableText("entity.commandfallingblock.better_falling_block_type", String.valueOf(dataBlock.blockState().getBlock().getName()));
         //#endif
     }
 
@@ -463,28 +469,28 @@ public class EntityBetterFallingBlock extends Entity {
 
     public void onSpawnPacket(SummonFallingBlockPayloadS2C payload) {
         //#if MC>=12000
-        getTrackedPosition().setPos(payload.pos);
+        getTrackedPosition().setPos(payload.pos());
         //#else
-        //$$ updateTrackedPosition(payload.pos);
+        //$$ updateTrackedPosition(payload.pos());
         //#endif
 
-        refreshPositionAfterTeleport(payload.pos);
+        refreshPositionAfterTeleport(payload.pos());
 
         //#if MC>=12000
-        setPosition(payload.pos);
+        setPosition(payload.pos());
         //#else
-        //$$ setPosition(payload.pos.x, payload.pos.y, payload.pos.z);
+        //$$ setPosition(payload.pos().x, payload.pos().y, payload.pos().z);
         //#endif
 
-        setId(payload.id);
-        setUuid(payload.uuid);
-        setVelocity(payload.velocity);
-        dataBlock = payload.dataBlock;
-        tickMove = payload.tickMove;
+        setId(payload.id());
+        setUuid(payload.uuid());
+        setVelocity(payload.velocity());
+        dataBlock = payload.dataBlock();
+        tickMove = payload.tickMove();
         age = -1;
         this.intersectionChecked = true;
-        setFallingBlockPos(payload.blockPosEnd);
-        setNoGravity(payload.hasNoGravity);
+        setFallingBlockPos(payload.blockPosEnd());
+        setNoGravity(payload.hasNoGravity());
         onDataBlockUpdate();
     }
 

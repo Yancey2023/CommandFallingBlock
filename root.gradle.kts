@@ -3,7 +3,6 @@ plugins {
     // Any project using `gg.essential.multi-version` must have a parent with this root plugin applied.
     // Advanced users may use multiple (potentially independent) multi-version trees in different sub-projects.
     // This is currently equivalent to applying `com.replaymod.preprocess-root`.
-    id("gg.essential.loom") version "1.9.+" apply false
     id("gg.essential.multi-version.root")
 }
 
@@ -31,6 +30,7 @@ preprocess {
     val fabric12106 = createNode("1.21.6-fabric", 12106, "yarn")
     val fabric12107 = createNode("1.21.7-fabric", 12107, "yarn")
     val fabric12108 = createNode("1.21.8-fabric", 12108, "yarn")
+    val fabric12109 = createNode("1.21.9-fabric", 12109, "yarn")
 
     // And then you need to tell the preprocessor which versions it should directly convert between.
     // This should form a directed graph with no cycles (i.e. a tree), which the preprocessor will then traverse to
@@ -40,6 +40,7 @@ preprocess {
     // mappings (but on different Minecraft versions, e.g. 1.12.2 forge to 1.8.9 forge, or 1.16.2 fabric to 1.18 fabric)
     // but not both at the same time, i.e. you cannot go straight from 1.12.2 forge to 1.16.2 fabric, you need to go via
     // an intermediary 1.16.2 forge project which has something in common with both.
+    fabric12109.link(fabric12108, file("versions/mapping-1.21.9-1.21.8.txt"))
     fabric12108.link(fabric12107)
     fabric12107.link(fabric12106)
     fabric12106.link(fabric12105)

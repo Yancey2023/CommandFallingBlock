@@ -4,13 +4,16 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.world.ClientWorld;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 import yancey.commandfallingblock.network.SummonFallingBlockPayloadS2C;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
-//#if MC>=11802
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+//#if MC>=12109
+import net.minecraft.client.render.entity.EntityRendererFactories;
+//#elseif MC>=11802
+//$$ import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 //#else
 //$$ import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
 //#endif
@@ -34,14 +37,15 @@ public class CommandFallingBlockClient implements ClientModInitializer {
         //#if MC>=12005
         ClientPlayNetworking.registerGlobalReceiver(SummonFallingBlockPayloadS2C.ID, (payload, context) ->
                 MinecraftClient.getInstance().execute(() -> {
+                    ClientWorld world = MinecraftClient.getInstance().world;
                     //#if MC>=12102
-                    EntityBetterFallingBlock entity = EntityBetterFallingBlock.BETTER_FALLING_BLOCK.create(context.player().clientWorld, SpawnReason.COMMAND);
+                    EntityBetterFallingBlock entity = EntityBetterFallingBlock.BETTER_FALLING_BLOCK.create(world, SpawnReason.COMMAND);
                     //#else
-                    //$$ EntityBetterFallingBlock entity = EntityBetterFallingBlock.BETTER_FALLING_BLOCK.create(context.player().clientWorld);
+                    //$$ EntityBetterFallingBlock entity = EntityBetterFallingBlock.BETTER_FALLING_BLOCK.create(world);
                     //#endif
-                    if (entity != null) {
+                    if (entity != null && world != null) {
                         entity.onSpawnPacket(payload);
-                        context.player().clientWorld.addEntity(entity);
+                        world.addEntity(entity);
                     } else {
                         LOGGER.warn("Skipping Entity with id {}", EntityBetterFallingBlock.BETTER_FALLING_BLOCK);
                     }
@@ -57,7 +61,7 @@ public class CommandFallingBlockClient implements ClientModInitializer {
         //$$             //#if MC>=12002
         //$$             world.addEntity(entity);
         //$$             //#else
-        //$$             //$$ world.addEntity(packet.id, entity);
+        //$$             //$$ world.addEntity(packet.id(), entity);
         //$$             //#endif
         //$$         } else {
         //$$             LOGGER.warn("Skipping Entity with id {}", EntityBetterFallingBlock.BETTER_FALLING_BLOCK);
@@ -66,8 +70,10 @@ public class CommandFallingBlockClient implements ClientModInitializer {
         //$$ });
         //#endif
 
-        //#if MC>=11802
-        EntityRendererRegistry.register(EntityBetterFallingBlock.BETTER_FALLING_BLOCK, RenderBetterFallingBlock::new);
+        //#if MC>=12109
+        EntityRendererFactories.register(EntityBetterFallingBlock.BETTER_FALLING_BLOCK, RenderBetterFallingBlock::new);
+        //#elseif MC>=11802
+        //$$ EntityRendererRegistry.register(EntityBetterFallingBlock.BETTER_FALLING_BLOCK, RenderBetterFallingBlock::new);
         //#else
         //$$ EntityRendererRegistry.INSTANCE.register(EntityBetterFallingBlock.BETTER_FALLING_BLOCK, (dispatcher, context) -> new RenderBetterFallingBlock(dispatcher));
         //#endif

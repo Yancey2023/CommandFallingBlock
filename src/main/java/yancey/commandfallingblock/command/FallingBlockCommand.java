@@ -44,7 +44,6 @@ public class FallingBlockCommand {
     fallingblock moveFromBlockPosToBlockPosByTick <posStart> <posEnd> <hasGravity> <tickMove> <block> [age]
     */
 
-    @SuppressWarnings("SpellCheckingInspection")
     //#if MC>=12000
     private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("command.commandfallingblock.fallingblock.failedToCalculate"));
     //#else

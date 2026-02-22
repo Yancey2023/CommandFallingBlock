@@ -40,7 +40,11 @@ import java.util.Optional;
 //$$ import net.minecraft.nbt.NbtHelper;
 //#endif
 
-public class DataBlock {
+//#if MC>=11802
+public record DataBlock(BlockState blockState, NbtCompound nbtCompound) {
+//#else
+//$$ public class DataBlock {
+//#endif
 
     //#if MC>=12106
     public static final Codec<DataBlock> CODEC = RecordCodecBuilder.create(
@@ -54,43 +58,57 @@ public class DataBlock {
     //#if MC>=12000&&MC<12102
     //$$ public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
     //#endif
-    public final BlockState blockState;
-    public final NbtCompound nbtCompound;
 
-    public DataBlock(BlockState blockState, NbtCompound nbtCompound) {
-        this.blockState = blockState;
-        this.nbtCompound = nbtCompound;
-    }
+    //#if MC<11802
+    //$$ public final BlockState blockState;
+    //$$ public final NbtCompound nbtCompound;
+    //$$
+    //$$ public DataBlock(BlockState blockState, NbtCompound nbtCompound) {
+    //$$     this.blockState = blockState;
+    //$$     this.nbtCompound = nbtCompound;
+    //$$ }
+    //$$
+    //$$ public BlockState blockState() {
+    //$$     return blockState;
+    //$$ }
+    //$$
+    //$$ public NbtCompound nbtCompound() {
+    //$$     return nbtCompound;
+    //$$ }
+    //#endif
 
     //#if MC<12106
     //$$ public DataBlock(NbtCompound nbtCompound) {
-    //$$     //#if MC>=12105
-    //$$     this.blockState = nbtCompound.getCompound("BlockState")
-    //$$             .map(nbtCompound1 -> NbtHelper.toBlockState(Registries.BLOCK, nbtCompound1))
-    //$$             .orElse(Blocks.AIR.getDefaultState());
-    //$$     //#elseif MC>=12102
-    //$$     //$$ blockState = NbtHelper.toBlockState(Registries.BLOCK, nbtCompound.getCompound("BlockState"));
-    //$$     //#elseif MC>=12000
-    //$$     //$$ blockState = NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState"));
-    //$$     //#else
-    //$$     //$$ blockState = NbtHelper.toBlockState(nbtCompound.getCompound("BlockState"));
-    //$$     //#endif
-    //$$     //#if MC>=12105
-    //$$     this.nbtCompound = nbtCompound.getCompound("Compound").orElse(null);
-    //$$     //#else
-    //$$     //$$ if (nbtCompound.contains("Compound")) {
-    //$$     //$$     this.nbtCompound = nbtCompound.getCompound("Compound");
-    //$$     //$$ } else {
-    //$$     //$$     this.nbtCompound = null;
-    //$$     //$$ }
-    //$$     //#endif
+    //$$     this(
+    //$$             //#if MC>=12105
+    //$$             nbtCompound.getCompound("BlockState")
+    //$$                     .map(nbtCompound1 -> NbtHelper.toBlockState(Registries.BLOCK, nbtCompound1))
+    //$$                     .orElse(Blocks.AIR.getDefaultState()),
+    //$$             //#elseif MC>=12102
+    //$$             //$$ NbtHelper.toBlockState(Registries.BLOCK, nbtCompound.getCompound("BlockState")),
+    //$$             //#elseif MC>=12000
+    //$$             //$$ NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState")),
+    //$$             //#else
+    //$$             //$$ NbtHelper.toBlockState(nbtCompound.getCompound("BlockState")),
+    //$$             //#endif
+    //$$             //#if MC>=12105
+    //$$             nbtCompound.getCompound("Compound").orElse(null)
+    //$$             //#else
+    //$$             //$$ nbtCompound.contains("Compound") ? nbtCompound.getCompound("Compound") : null
+    //$$             //#endif
+    //$$     );
     //$$ }
     //#endif
 
     public static DataBlock createByClientRenderData(PacketByteBuf packetByteBuf) {
         BlockState blockState = Block.getStateFromRawId(packetByteBuf.readInt());
         NbtCompound nbtCompound = null;
-        if (blockState.getRenderType() != BlockRenderType.MODEL && packetByteBuf.readBoolean()) {
+        //#if MC>=12104
+        boolean hasNbt = packetByteBuf.readBoolean();
+        //#else
+        //$$ boolean hasNbt = blockState.getRenderType() != BlockRenderType.MODEL && packetByteBuf.readBoolean();
+        //#endif
+        if (hasNbt) {
             nbtCompound = packetByteBuf.readNbt();
         }
         return new DataBlock(blockState, nbtCompound);
@@ -125,11 +143,13 @@ public class DataBlock {
 
     ) {
         buf.writeInt(Block.getRawIdFromState(blockState));
-        if (blockState.getRenderType() == BlockRenderType.MODEL) {
-            return;
-        }
+        //#if MC<12104
+        //$$ if (blockState.getRenderType() == BlockRenderType.MODEL) {
+        //$$     return;
+        //$$ }
+        //#endif
         Block block = blockState.getBlock();
-        if (nbtCompound != null && block instanceof BlockEntityProvider) {
+        if (block instanceof BlockEntityProvider) {
             //#if MC>=11802
             BlockEntity blockEntity = ((BlockEntityProvider) block).createBlockEntity(blockPos, blockState);
             //#else
@@ -203,12 +223,11 @@ public class DataBlock {
             //#endif
             BlockPos blockPos
     ) {
-        if (blockState instanceof BlockEntityProvider) {
-
+        if (blockState.getBlock() instanceof BlockEntityProvider) {
             //#if MC>=11802
-            BlockEntity blockEntity = ((BlockEntityProvider) blockState).createBlockEntity(blockPos, blockState);
+            BlockEntity blockEntity = ((BlockEntityProvider) blockState.getBlock()).createBlockEntity(blockPos, blockState);
             //#else
-            //$$ BlockEntity blockEntity = ((BlockEntityProvider) blockState).createBlockEntity(world);
+            //$$ BlockEntity blockEntity = ((BlockEntityProvider) blockState.getBlock()).createBlockEntity(world);
             //#endif
 
             if (blockEntity != null) {
