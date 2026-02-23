@@ -8,13 +8,11 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(FallingBlockEntity.class)
 public interface FallingBlockEntityAccessor {
 
-    //@formatter:off
-    @Accessor
     //#if MC>=12105
-    void setBlockState(BlockState block);
+    @Accessor("blockState")
     //#else
-    //$$ void setBlock(BlockState block);
+    //$$ @Accessor("block")
     //#endif
-    //@formatter:on
+    void setBlockState(BlockState block);
 
 }

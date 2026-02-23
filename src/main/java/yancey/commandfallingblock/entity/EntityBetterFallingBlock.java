@@ -277,11 +277,7 @@ public class EntityBetterFallingBlock extends Entity {
         World world = getEntityWorld();
         //#endif
         FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, world);
-        //#if MC>=12105
         ((FallingBlockEntityAccessor) entity).setBlockState(dataBlock.blockState());
-        //#else
-        //$$ ((FallingBlockEntityAccessor) entity).setBlock(dataBlock.blockState());
-        //#endif
         //#if MC>=11802
         entity.setPosition(getEntityPos());
         //#else
@@ -438,7 +434,6 @@ public class EntityBetterFallingBlock extends Entity {
     }
 
     @Override
-    @SuppressWarnings("SpellCheckingInspection")
     public void populateCrashReport(CrashReportSection section) {
         super.populateCrashReport(section);
         section.add("Immitating BlockState", dataBlock.blockState().toString());

@@ -27,6 +27,10 @@ import net.minecraft.text.Text;
 //$$ import net.minecraft.text.TranslatableText;
 //#endif
 
+//#if MC>=12111
+import net.minecraft.server.command.CommandManager;
+//#endif
+
 public class FallingBlockCommand {
 
     /*
@@ -63,7 +67,11 @@ public class FallingBlockCommand {
         Executor moveFromPosToPosByTick = FallingBlockCommand::moveFromPosToPosByTick;
         //#if MC>=12000
         dispatcher.register(literal("fallingblock")
-                .requires(source -> source.hasPermissionLevel(2))
+                //#if MC>=12111
+                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+                //#else
+                //# .requires(source -> source.hasPermissionLevel(2))
+                //#endif
                 .then(add("moveFromPos", posStart(motion(hasGravity(blockAndAge(commandRegistryAccess, false, moveFromPos))))))
                 .then(add("moveFromBlockPos", blockPosStart(motion(hasGravity(blockAndAge(commandRegistryAccess, true, moveFromPos))))))
                 .then(add("moveFromPosByTick", posStart(motion(hasGravity(tickMove(blockAndAge(commandRegistryAccess, false, moveFromPosByTick)))))))

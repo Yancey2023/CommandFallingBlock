@@ -20,7 +20,6 @@ import yancey.commandfallingblock.network.SummonFallingBlockPayloadS2C;
 
 public class CommandFallingBlock implements ModInitializer {
 
-    @SuppressWarnings("SpellCheckingInspection")
     public static final String MOD_ID = "commandfallingblock";
 
     @Override
