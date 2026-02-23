@@ -2,67 +2,74 @@ package yancey.commandfallingblock.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.core.BlockPos;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
-//#if MC>=12000&&MC<12109
-//$$ import net.minecraft.util.math.random.Random;
+//#if MC>=12109
+//#elseif MC>=12000
+//$$ import net.minecraft.util.RandomSource;
 //#else
 //$$ import java.util.Random;
 //#endif
 
 //#if MC>=11802
-import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 //#else
-//$$ import net.minecraft.client.render.entity.EntityRenderDispatcher;
+//$$ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 //#endif
 
 //#if MC>=12102
-import net.minecraft.block.Blocks;
-import net.minecraft.client.render.entity.state.EntityRenderState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 //#if MC<12109
-//$$ import net.minecraft.world.BlockRenderView;
+//$$ import net.minecraft.world.level.BlockAndTintGetter;
 //#endif
-import net.minecraft.world.EmptyBlockRenderView;
+import net.minecraft.world.level.EmptyBlockAndTintGetter;
 //#else
-//$$ import net.minecraft.client.texture.SpriteAtlasTexture;
-//$$ import net.minecraft.util.Identifier;
-//$$ import net.minecraft.world.World;
+//$$ import net.minecraft.client.renderer.texture.TextureAtlas;
+//$$ import net.minecraft.resources.ResourceLocation;
+//$$ import net.minecraft.world.level.Level;
 //#endif
 
 //#if MC>=12104
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 //#else
-//$$ import net.minecraft.block.BlockRenderType;
+//$$ import net.minecraft.world.level.block.RenderShape;
 //#endif
 
 //#if MC>=12105&&MC<12109
-//$$ import net.minecraft.fluid.FluidState;
-//$$ import net.minecraft.registry.entry.RegistryEntry;
-//$$ import net.minecraft.util.math.Direction;
-//$$ import net.minecraft.world.biome.Biome;
-//$$ import net.minecraft.world.biome.ColorResolver;
-//$$ import net.minecraft.world.chunk.light.LightingProvider;
+//$$ import net.minecraft.core.Holder;
+//$$ import net.minecraft.core.Direction;
+//$$ import net.minecraft.world.level.biome.Biome;
+//$$ import net.minecraft.world.level.ColorResolver;
+//$$ import net.minecraft.world.level.lighting.LevelLightEngine;
+//$$ import net.minecraft.world.level.material.FluidState;
 //$$ import org.jetbrains.annotations.Nullable;
 //#endif
 
 //#if MC>=12109
-import net.minecraft.client.render.block.entity.BlockEntityRenderManager;
-import net.minecraft.client.render.block.entity.state.BlockEntityRenderState;
-import net.minecraft.client.render.block.MovingBlockRenderState;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.state.CameraRenderState;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.block.MovingBlockRenderState;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.state.CameraRenderState;
 //#else
-//$$ import net.minecraft.block.BlockState;
-//$$ import net.minecraft.client.render.OverlayTexture;
-//$$ import net.minecraft.client.render.RenderLayers;
-//$$ import net.minecraft.client.render.VertexConsumerProvider;
-//$$ import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
-//$$ import net.minecraft.client.render.block.BlockRenderManager;
+//$$ import net.minecraft.client.renderer.texture.OverlayTexture;
+//$$ import net.minecraft.client.renderer.ItemBlockRenderTypes;
+//$$ import net.minecraft.client.renderer.MultiBufferSource;
+//$$ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+//$$ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+//$$ import net.minecraft.world.level.block.state.BlockState;
+//#endif
+
+//#if MC>=12111
+import org.jspecify.annotations.NonNull;
+//#else
+//$$ import org.jetbrains.annotations.NotNull;
 //#endif
 
 @Environment(value = EnvType.CLIENT)
@@ -76,18 +83,18 @@ public class RenderBetterFallingBlock
 {
 
     //#if MC>=11802
-    private static final BlockEntityRenderManager blockEntityRenderDispatcher = MinecraftClient.getInstance().getBlockEntityRenderDispatcher();
+    private static final BlockEntityRenderDispatcher blockEntityRenderDispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
     //#else
-    //$$ private static final BlockEntityRenderDispatcher blockEntityRenderDispatcher = BlockEntityRenderDispatcher.INSTANCE;
+    //$$ private static final BlockEntityRenderDispatcher blockEntityRenderDispatcher = BlockEntityRenderDispatcher.instance;
     //#endif
 
     //#if MC>=12000&&MC<12109
-    //$$ private final BlockRenderManager blockRenderManager;
+    //$$ private final BlockRenderDispatcher blockRenderDispatcher;
     //#endif
 
     public RenderBetterFallingBlock(
             //#if MC>=11802
-            EntityRendererFactory.Context context
+            EntityRendererProvider.Context context
             //#else
             //$$ EntityRenderDispatcher dispatcher
             //#endif
@@ -101,36 +108,36 @@ public class RenderBetterFallingBlock
         this.shadowRadius = 0.5f;
 
         //#if MC>=12000&&MC<12109
-        //$$ this.blockRenderManager = context.getBlockRenderManager();
+        //$$ this.blockRenderDispatcher = context.getBlockRenderDispatcher();
         //#endif
     }
 
     //#if MC>=12109
     public <T extends BlockEntityRenderState> boolean renderBlockEntity(
             BetterFallingBlockEntityRenderState renderState,
-            MatrixStack matrixStack,
-            OrderedRenderCommandQueue queue,
+            PoseStack poseStack,
+            SubmitNodeCollector queue,
             CameraRenderState cameraState
     ) {
-        BlockEntityRenderer<BlockEntity, T> blockEntityBlockEntityRenderer = blockEntityRenderDispatcher.get(renderState.blockEntity);
+        BlockEntityRenderer<BlockEntity, T> blockEntityBlockEntityRenderer = blockEntityRenderDispatcher.getRenderer(renderState.blockEntity);
         if (blockEntityBlockEntityRenderer != null) {
             T blockEntityRenderState = blockEntityBlockEntityRenderer.createRenderState();
-            blockEntityBlockEntityRenderer.updateRenderState(
+            blockEntityBlockEntityRenderer.extractRenderState(
                     renderState.blockEntity,
                     blockEntityRenderState,
                     renderState.tickDelta,
                     cameraState.pos,
                     null
             );
-            matrixStack.push();
-            matrixStack.translate(-0.5, 0.0, -0.5);
-            blockEntityBlockEntityRenderer.render(
+            poseStack.pushPose();
+            poseStack.translate(-0.5, 0.0, -0.5);
+            blockEntityBlockEntityRenderer.submit(
                     blockEntityRenderState,
-                    matrixStack,
+                    poseStack,
                     queue,
                     cameraState
             );
-            matrixStack.pop();
+            poseStack.popPose();
             return true;
         } else {
             return false;
@@ -139,7 +146,7 @@ public class RenderBetterFallingBlock
     //#endif
 
     @Override
-    public void render(
+    public void submit(
             //#if MC>=12102
             BetterFallingBlockEntityRenderState renderState,
             //#else
@@ -147,12 +154,21 @@ public class RenderBetterFallingBlock
             //$$ float yaw,
             //$$ float tickDelta,
             //#endif
-            MatrixStack matrixStack,
+            //#if MC>=12111
+            @NonNull
+            //#endif
+            PoseStack poseStack,
             //#if MC>=12109
-            OrderedRenderCommandQueue queue,
+            //#if MC>=12111
+            @NonNull
+            //#endif
+            SubmitNodeCollector queue,
+            //#if MC>=12111
+            @NonNull
+            //#endif
             CameraRenderState cameraState
             //#else
-            //$$ VertexConsumerProvider vertexConsumerProvider,
+            //$$ MultiBufferSource multiBufferSource,
             //$$ int light
             //#endif
     ) {
@@ -164,11 +180,11 @@ public class RenderBetterFallingBlock
         //#endif
         //#if MC>=12105
         //#elseif MC>=12102
-        //$$ BlockRenderView world = renderState.world;
+        //$$ BlockAndTintGetter level = renderState.level;
         //#elseif MC>=11802
-        //$$ World world = entity.getWorld();
+        //$$ Level level = entity.level();
         //#else
-        //$$ World world = entity.world;
+        //$$ Level level = entity.level;
         //#endif
         //#if MC>=12102
         BlockEntity blockEntity = renderState.blockEntity;
@@ -179,140 +195,149 @@ public class RenderBetterFallingBlock
         if (blockEntity != null) {
             //#if MC>=12102
             //#elseif MC>=11802
-            //$$ blockEntity.setWorld(world);
+            //$$ blockEntity.setLevel(level);
             //#else
-            //$$ entity.blockEntity.setLocation(world, entity.getFallingBlockPos());
+            //$$ entity.blockEntity.setLevelAndPosition(level, entity.getFallingBlockPos());
             //#endif
 
             //#if MC>=12109
-            if (renderBlockEntity(renderState, matrixStack, queue, cameraState)) {
+            if (renderBlockEntity(renderState, poseStack, queue, cameraState)) {
                 isBlockEntityRenderer = true;
             }
             //#elseif MC>=12104
-            //$$ BlockEntityRenderer<BlockEntity> blockEntityBlockEntityRenderer = blockEntityRenderDispatcher.get(blockEntity);
+            //$$ BlockEntityRenderer<BlockEntity> blockEntityBlockEntityRenderer = blockEntityRenderDispatcher.getRenderer(blockEntity);
             //$$ if (blockEntityBlockEntityRenderer != null) {
-            //$$    matrixStack.push();
-            //$$    matrixStack.translate(-0.5, 0.0, -0.5);
+            //$$    poseStack.pushPose();
+            //$$    poseStack.translate(-0.5, 0.0, -0.5);
             //$$    blockEntityBlockEntityRenderer.render(
             //$$            blockEntity,
             //$$            renderState.tickDelta,
-            //$$            matrixStack,
-            //$$            vertexConsumerProvider,
+            //$$            poseStack,
+            //$$            multiBufferSource,
             //$$            light,
-            //$$            OverlayTexture.DEFAULT_UV
+            //$$            OverlayTexture.NO_OVERLAY
             //$$            //#if MC>=12105
             //$$            ,
-            //$$            blockEntityRenderDispatcher.camera.getPos()
+            //$$            blockEntityRenderDispatcher.camera.getPosition()
             //$$            //#endif
             //$$    );
-            //$$    matrixStack.pop();
+            //$$    poseStack.popPose();
             //$$    isBlockEntityRenderer = true;
             //$$ }
             //#else
-            //$$ isBlockEntityRenderer = blockState.getRenderType() != BlockRenderType.MODEL;
+            //$$ isBlockEntityRenderer = blockState.getRenderShape() != RenderShape.MODEL;
             //$$ if (isBlockEntityRenderer) {
-            //$$     matrixStack.push();
-            //$$     matrixStack.translate(-0.5, 0.0, -0.5);
-            //$$     blockEntityRenderDispatcher.renderEntity(blockEntity, matrixStack, vertexConsumerProvider, light, OverlayTexture.DEFAULT_UV);
-            //$$     matrixStack.pop();
+            //$$     poseStack.pushPose();
+            //$$     poseStack.translate(-0.5, 0.0, -0.5);
+            //$$     blockEntityRenderDispatcher.renderItem(blockEntity, poseStack, multiBufferSource, light, OverlayTexture.NO_OVERLAY);
+            //$$     poseStack.popPose();
             //$$  }
             //#endif
         }
         if (!isBlockEntityRenderer) {
-            matrixStack.push();
-            matrixStack.translate(-0.5, 0.0, -0.5);
+            poseStack.pushPose();
+            poseStack.translate(-0.5, 0.0, -0.5);
             //#if MC>=12109
-            queue.submitMovingBlock(matrixStack, renderState.movingBlockRenderState);
+            queue.submitMovingBlock(poseStack, renderState.movingBlockRenderState);
             //#else
             //$$ //#if MC<12000
-            //$$ //$$ BlockRenderManager blockRenderManager = MinecraftClient.getInstance().getBlockRenderManager();
+            //$$ //$$ BlockRenderDispatcher blockRenderDispatcher = Minecraft.getInstance().getBlockRenderer();
             //$$ //#endif
-            //$$ blockRenderManager.getModelRenderer().render(
+            //$$ blockRenderDispatcher.getModelRenderer().tesselateBlock(
             //$$         //#if MC>=12105
             //$$         renderState,
             //$$         //#else
-            //$$         //$$ world,
+            //$$         //$$ level,
             //$$         //#endif
             //$$         //#if MC>=12105
-            //$$         blockRenderManager.getModel(blockState).getParts(Random.create(blockState.getRenderingSeed(renderState.fallingBlockPos))),
+            //$$         blockRenderDispatcher.getBlockModel(blockState).collectParts(RandomSource.create(blockState.getSeed(renderState.fallingBlockPos))),
             //$$         //#else
-            //$$         //$$ blockRenderManager.getModel(blockState),
+            //$$         //$$ blockRenderDispatcher.getBlockModel(blockState),
             //$$         //#endif
             //$$         blockState,
             //$$         //#if MC>=12102
             //$$         renderState.entityBlockPos,
             //$$         //#elseif MC>=12000
-            //$$         //$$ BlockPos.ofFloored(entity.getX(), entity.getBoundingBox().maxY, entity.getZ()),
+            //$$         //$$ BlockPos.containing(entity.getX(), entity.getBoundingBox().maxY, entity.getZ()),
             //$$         //#else
             //$$         //$$ new BlockPos(entity.getX(), entity.getBoundingBox().maxY, entity.getZ()),
             //$$         //#endif
-            //$$         matrixStack,
-            //$$         vertexConsumerProvider.getBuffer(RenderLayers.getMovingBlockLayer(blockState)),
+            //$$         poseStack,
+            //$$         multiBufferSource.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(blockState)),
             //$$         false,
             //$$         //#if MC>=12105
             //$$         //#elseif MC>=12000
-            //$$         //$$ Random.create(),
+            //$$         //$$ RandomSource.create(),
             //$$         //#else
             //$$         //$$ new Random(),
             //$$         //#endif
             //$$         //#if MC>=12105
             //$$         //#elseif MC>=12102
-            //$$         //$$ blockState.getRenderingSeed(renderState.fallingBlockPos),
+            //$$         //$$ blockState.getSeed(renderState.fallingBlockPos),
             //$$         //#else
-            //$$         //$$ blockState.getRenderingSeed(entity.getFallingBlockPos()),
+            //$$         //$$ blockState.getSeed(entity.getFallingBlockPos()),
             //$$         //#endif
-            //$$         OverlayTexture.DEFAULT_UV
+            //$$         OverlayTexture.NO_OVERLAY
             //$$ );
             //#endif
-            matrixStack.pop();
+            poseStack.popPose();
         }
         //#if MC>=12109
-        super.render(renderState, matrixStack, queue, cameraState);
+        super.submit(renderState, poseStack, queue, cameraState);
         //#elseif MC>=12102
-        //$$ super.render(renderState, matrixStack, vertexConsumerProvider, light);
+        //$$ super.render(renderState, poseStack, multiBufferSource, light);
         //#else
-        //$$ super.render(entity, yaw, tickDelta, matrixStack, vertexConsumerProvider, light);
+        //$$ super.render(entity, yaw, tickDelta, poseStack, multiBufferSource, light);
         //#endif
     }
 
     //#if MC<12102
     //$$ @Override
     //$$ @SuppressWarnings("deprecation")
-    //$$ public Identifier getTexture(EntityBetterFallingBlock entityBetterFallingBlock) {
-    //$$     return SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE;
+    //$$ public @NotNull ResourceLocation getTextureLocation(EntityBetterFallingBlock entityBetterFallingBlock) {
+    //$$     return TextureAtlas.LOCATION_BLOCKS;
     //$$ }
     //#endif
 
     //#if MC>=12102
     @Override
-    public BetterFallingBlockEntityRenderState createRenderState() {
+    public
+    //#if MC>=12111
+    @NonNull
+    //#else
+    //$$ @NotNull
+    //#endif
+    BetterFallingBlockEntityRenderState createRenderState() {
         return new BetterFallingBlockEntityRenderState();
     }
 
     @Override
-    public void updateRenderState(EntityBetterFallingBlock entity, BetterFallingBlockEntityRenderState state, float tickDelta) {
-        super.updateRenderState(entity, state, tickDelta);
+    //#if MC>=12105
+    @SuppressWarnings("resource")
+    //#endif
+    public void extractRenderState(EntityBetterFallingBlock entity, BetterFallingBlockEntityRenderState state, float tickDelta) {
+        super.extractRenderState(entity, state, tickDelta);
         //#if MC>=12104
         state.tickDelta = tickDelta;
         //#endif
         //#if MC>=12109
-        state.movingBlockRenderState.fallingBlockPos = entity.getFallingBlockPos();
-        state.movingBlockRenderState.entityBlockPos = BlockPos.ofFloored(entity.getX(), entity.getBoundingBox().maxY, entity.getZ());
+        state.movingBlockRenderState.randomSeedPos = entity.getFallingBlockPos();
+        state.movingBlockRenderState.blockPos = BlockPos.containing(entity.getX(), entity.getBoundingBox().maxY, entity.getZ());
         state.movingBlockRenderState.blockState = entity.dataBlock.blockState();
-        state.movingBlockRenderState.world = entity.getEntityWorld();
-        state.movingBlockRenderState.biome = entity.getEntityWorld().getBiome(state.movingBlockRenderState.entityBlockPos);
+        state.movingBlockRenderState.level = entity.level();
+        state.movingBlockRenderState.biome = entity.level().getBiome(state.movingBlockRenderState.blockPos);
         //#else
         //$$ state.fallingBlockPos = entity.getFallingBlockPos();
-        //$$ state.entityBlockPos = BlockPos.ofFloored(entity.getX(), entity.getBoundingBox().maxY, entity.getZ());
+        //$$ state.entityBlockPos = BlockPos.containing(entity.getX(), entity.getBoundingBox().maxY, entity.getZ());
         //$$ state.blockState = entity.dataBlock.blockState();
-        //$$ state.world = entity.getWorld();
+        //$$ state.level = entity.level();
         //$$ //#if MC>=12105
-        //$$ state.biome = entity.getWorld().getBiome(state.fallingBlockPos);
+        //$$ state.biome = entity.level().getBiome(state.fallingBlockPos);
         //$$ //#endif
         //#endif
         state.blockEntity = entity.blockEntity;
         if (state.blockEntity != null) {
-            state.blockEntity.setWorld(entity.getEntityWorld());
+            state.blockEntity.setLevel(entity.level());
         }
     }
     //#endif
@@ -320,7 +345,7 @@ public class RenderBetterFallingBlock
     //#if MC>=12102
     public static class BetterFallingBlockEntityRenderState extends EntityRenderState
             //#if MC>=12105&&MC<12109
-            //$$ implements BlockRenderView
+            //$$ implements BlockAndTintGetter
             //#endif
     {
         //#if MC>=12104
@@ -335,9 +360,9 @@ public class RenderBetterFallingBlock
         //$$ public BlockState blockState;
         //$$ //#if MC>=12105
         //$$ @Nullable
-        //$$ public RegistryEntry<Biome> biome;
+        //$$ public Holder<Biome> biome;
         //$$ //#endif
-        //$$ public BlockRenderView world;
+        //$$ public BlockAndTintGetter level;
         //#endif
 
         public BetterFallingBlockEntityRenderState() {
@@ -345,16 +370,16 @@ public class RenderBetterFallingBlock
             this.tickDelta = 0;
             //#endif
             //#if MC>=12109
-            movingBlockRenderState.fallingBlockPos = BlockPos.ORIGIN;
-            movingBlockRenderState.entityBlockPos = BlockPos.ORIGIN;
-            movingBlockRenderState.blockState = Blocks.SAND.getDefaultState();
-            movingBlockRenderState.world = EmptyBlockRenderView.INSTANCE;
+            movingBlockRenderState.randomSeedPos = BlockPos.ZERO;
+            movingBlockRenderState.blockPos = BlockPos.ZERO;
+            movingBlockRenderState.blockState = Blocks.SAND.defaultBlockState();
+            movingBlockRenderState.level = EmptyBlockAndTintGetter.INSTANCE;
             movingBlockRenderState.biome = null;
             //#else
-            //$$ this.fallingBlockPos = BlockPos.ORIGIN;
-            //$$ this.entityBlockPos = BlockPos.ORIGIN;
-            //$$ this.blockState = Blocks.SAND.getDefaultState();
-            //$$ this.world = EmptyBlockRenderView.INSTANCE;
+            //$$ this.fallingBlockPos = BlockPos.ZERO;
+            //$$ this.entityBlockPos = BlockPos.ZERO;
+            //$$ this.blockState = Blocks.SAND.defaultBlockState();
+            //$$ this.level = EmptyBlockAndTintGetter.INSTANCE;
             //$$ //#if MC>=12105
             //$$ this.biome = null;
             //$$ //#endif
@@ -364,17 +389,17 @@ public class RenderBetterFallingBlock
 
         //#if MC>=12105&&MC<12109
         //$$ @Override
-        //$$ public float getBrightness(Direction direction, boolean shaded) {
-        //$$     return this.world.getBrightness(direction, shaded);
+        //$$ public float getShade(Direction direction, boolean shaded) {
+        //$$     return this.level.getShade(direction, shaded);
         //$$ }
         //$$
         //$$ @Override
-        //$$ public LightingProvider getLightingProvider() {
-        //$$     return this.world.getLightingProvider();
+        //$$ public @NotNull LevelLightEngine getLightEngine() {
+        //$$     return this.level.getLightEngine();
         //$$ }
         //$$
         //$$ @Override
-        //$$ public int getColor(BlockPos pos, ColorResolver colorResolver) {
+        //$$ public int getBlockTint(BlockPos pos, ColorResolver colorResolver) {
         //$$     return this.biome == null ? -1 : colorResolver.getColor(this.biome.value(), pos.getX(), pos.getZ());
         //$$ }
         //$$
@@ -384,12 +409,12 @@ public class RenderBetterFallingBlock
         //$$ }
         //$$
         //$$ @Override
-        //$$ public BlockState getBlockState(BlockPos pos) {
-        //$$     return pos.equals(this.entityBlockPos) ? this.blockState : Blocks.AIR.getDefaultState();
+        //$$ public @NotNull BlockState getBlockState(BlockPos pos) {
+        //$$     return pos.equals(this.entityBlockPos) ? this.blockState : Blocks.AIR.defaultBlockState();
         //$$ }
         //$$
         //$$ @Override
-        //$$ public FluidState getFluidState(BlockPos pos) {
+        //$$ public @NotNull FluidState getFluidState(BlockPos pos) {
         //$$     return this.getBlockState(pos).getFluidState();
         //$$ }
         //$$
@@ -399,7 +424,7 @@ public class RenderBetterFallingBlock
         //$$ }
         //$$
         //$$ @Override
-        //$$ public int getBottomY() {
+        //$$ public int getMinY() {
         //$$     return this.entityBlockPos.getY();
         //$$ }
         //#endif

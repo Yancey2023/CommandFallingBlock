@@ -1,2 +1,0 @@
-net.minecraft.entity.Entity getEntityPos() getPos()
-net.minecraft.entity.Entity getEntityWorld() getWorld()

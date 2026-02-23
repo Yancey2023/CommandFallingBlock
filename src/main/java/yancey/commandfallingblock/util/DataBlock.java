@@ -1,47 +1,58 @@
 package yancey.commandfallingblock.util;
 
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 //#if MC<11802||MC>=12005
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 //#endif
 
 //#if MC>=11802
-import net.minecraft.world.WorldEvents;
+import net.minecraft.world.level.block.LevelEvent;
 //#endif
 
 //#if MC>=12000&&MC<12106
-//$$ import net.minecraft.registry.Registries;
+//$$ import net.minecraft.core.registries.BuiltInRegistries;
 //#endif
 
 //#if MC>=12000
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.core.HolderLookup;
 //#endif
 
 //#if MC>=12005
-import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+//#endif
+
+//#if MC<12104
+//$$ import net.minecraft.world.level.block.RenderShape;
+//#endif
+
+//#if MC==12105
+//$$ import net.minecraft.world.level.block.Blocks;
 //#endif
 
 //#if MC>=12106
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.util.ErrorReporter;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.util.ProblemReporter;
 
 import java.util.Optional;
 //#else
-//$$ import net.minecraft.nbt.NbtHelper;
+//$$ import net.minecraft.nbt.NbtUtils;
 //#endif
 
 //#if MC>=11802
-public record DataBlock(BlockState blockState, NbtCompound nbtCompound) {
+public record DataBlock(BlockState blockState, CompoundTag compoundTag) {
 //#else
 //$$ public class DataBlock {
 //#endif
@@ -50,79 +61,79 @@ public record DataBlock(BlockState blockState, NbtCompound nbtCompound) {
     public static final Codec<DataBlock> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     BlockState.CODEC.fieldOf("BlockState").forGetter(datablock -> datablock.blockState),
-                    NbtCompound.CODEC.optionalFieldOf("Compound").forGetter(datablock -> Optional.ofNullable(datablock.nbtCompound))
-            ).apply(instance, (blockState, nbtCompound) -> new DataBlock(blockState, nbtCompound.orElse(null)))
+                    CompoundTag.CODEC.optionalFieldOf("Compound").forGetter(datablock -> Optional.ofNullable(datablock.compoundTag))
+            ).apply(instance, (blockState, compoundTag) -> new DataBlock(blockState, compoundTag.orElse(null)))
     );
     //#endif
 
     //#if MC>=12000&&MC<12102
-    //$$ public static final RegistryWrapper.Impl<Block> registryWrapper = Registries.BLOCK.getReadOnlyWrapper();
+    //$$ public static final HolderLookup.RegistryLookup<Block> registryWrapper = BuiltInRegistries.BLOCK.asLookup();
     //#endif
 
     //#if MC<11802
-    //$$ public final BlockState blockState;
-    //$$ public final NbtCompound nbtCompound;
+    //$$ private final BlockState blockState;
+    //$$ private final CompoundTag compoundTag;
     //$$
-    //$$ public DataBlock(BlockState blockState, NbtCompound nbtCompound) {
+    //$$ public DataBlock(BlockState blockState, CompoundTag compoundTag) {
     //$$     this.blockState = blockState;
-    //$$     this.nbtCompound = nbtCompound;
+    //$$     this.compoundTag = compoundTag;
     //$$ }
     //$$
     //$$ public BlockState blockState() {
     //$$     return blockState;
     //$$ }
     //$$
-    //$$ public NbtCompound nbtCompound() {
-    //$$     return nbtCompound;
+    //$$ public CompoundTag compoundTag() {
+    //$$     return compoundTag;
     //$$ }
     //#endif
 
     //#if MC<12106
-    //$$ public DataBlock(NbtCompound nbtCompound) {
+    //$$ public DataBlock(CompoundTag compoundTag) {
     //$$     this(
     //$$             //#if MC>=12105
-    //$$             nbtCompound.getCompound("BlockState")
-    //$$                     .map(nbtCompound1 -> NbtHelper.toBlockState(Registries.BLOCK, nbtCompound1))
-    //$$                     .orElse(Blocks.AIR.getDefaultState()),
+    //$$             compoundTag.getCompound("BlockState")
+    //$$                     .map(compoundTag1 -> NbtUtils.readBlockState(BuiltInRegistries.BLOCK, compoundTag1))
+    //$$                     .orElse(Blocks.AIR.defaultBlockState()),
     //$$             //#elseif MC>=12102
-    //$$             //$$ NbtHelper.toBlockState(Registries.BLOCK, nbtCompound.getCompound("BlockState")),
+    //$$             //$$ NbtUtils.readBlockState(BuiltInRegistries.BLOCK, compoundTag.getCompound("BlockState")),
     //$$             //#elseif MC>=12000
-    //$$             //$$ NbtHelper.toBlockState(registryWrapper, nbtCompound.getCompound("BlockState")),
+    //$$             //$$ NbtUtils.readBlockState(registryWrapper, compoundTag.getCompound("BlockState")),
     //$$             //#else
-    //$$             //$$ NbtHelper.toBlockState(nbtCompound.getCompound("BlockState")),
+    //$$             //$$ NbtUtils.readBlockState(compoundTag.getCompound("BlockState")),
     //$$             //#endif
     //$$             //#if MC>=12105
-    //$$             nbtCompound.getCompound("Compound").orElse(null)
+    //$$             compoundTag.getCompound("Compound").orElse(null)
     //$$             //#else
-    //$$             //$$ nbtCompound.contains("Compound") ? nbtCompound.getCompound("Compound") : null
+    //$$             //$$ compoundTag.contains("Compound") ? compoundTag.getCompound("Compound") : null
     //$$             //#endif
     //$$     );
     //$$ }
     //#endif
 
-    public static DataBlock createByClientRenderData(PacketByteBuf packetByteBuf) {
-        BlockState blockState = Block.getStateFromRawId(packetByteBuf.readInt());
-        NbtCompound nbtCompound = null;
+    public static DataBlock createByClientRenderData(FriendlyByteBuf buf) {
+        BlockState blockState = Block.stateById(buf.readInt());
+        CompoundTag compoundTag = null;
         //#if MC>=12104
-        boolean hasNbt = packetByteBuf.readBoolean();
+        boolean hasNbt = buf.readBoolean();
         //#else
-        //$$ boolean hasNbt = blockState.getRenderType() != BlockRenderType.MODEL && packetByteBuf.readBoolean();
+        //$$ boolean hasNbt = blockState.getRenderShape() != RenderShape.MODEL && buf.readBoolean();
         //#endif
         if (hasNbt) {
-            nbtCompound = packetByteBuf.readNbt();
+            compoundTag = buf.readNbt();
         }
-        return new DataBlock(blockState, nbtCompound);
+        return new DataBlock(blockState, compoundTag);
     }
 
 
     //#if MC<12106
-    //$$ public NbtCompound writeToNBT() {
-    //$$     NbtCompound nbtCompound = new NbtCompound();
-    //$$     nbtCompound.put("BlockState", NbtHelper.fromBlockState(blockState));
-    //$$     if (this.nbtCompound != null) {
-    //$$         nbtCompound.put("Compound", this.nbtCompound);
+    //$$ public CompoundTag writeToNBT() {
+    //$$     CompoundTag compoundTag = new CompoundTag();
+    //$$     compoundTag.put("BlockState", NbtUtils.writeBlockState(blockState));
+    //$$     if (this.compoundTag != null) {
+    //$$         compoundTag.put("Compound", this.compoundTag);
     //$$     }
-    //$$     return nbtCompound;
+    //$$     return compoundTag;
     //$$ }
     //#endif
 
@@ -135,104 +146,100 @@ public record DataBlock(BlockState blockState, NbtCompound nbtCompound) {
     public void writeClientRenderData(
             Logger logger,
             //#if MC>=12005
-            RegistryByteBuf buf,
+            RegistryFriendlyByteBuf buf,
             //#else
-            //$$ PacketByteBuf buf,
+            //$$ FriendlyByteBuf buf,
             //#endif
             BlockPos blockPos
 
     ) {
-        buf.writeInt(Block.getRawIdFromState(blockState));
+        buf.writeInt(Block.getId(blockState));
         //#if MC<12104
-        //$$ if (blockState.getRenderType() == BlockRenderType.MODEL) {
+        //$$ if (blockState.getRenderShape() == RenderShape.MODEL) {
         //$$     return;
         //$$ }
         //#endif
         Block block = blockState.getBlock();
-        if (block instanceof BlockEntityProvider) {
+        if (block instanceof EntityBlock) {
             //#if MC>=11802
-            BlockEntity blockEntity = ((BlockEntityProvider) block).createBlockEntity(blockPos, blockState);
+            BlockEntity blockEntity = ((EntityBlock) block).newBlockEntity(blockPos, blockState);
             //#else
-            //$$ BlockEntity blockEntity = ((BlockEntityProvider) block).createBlockEntity(null);
+            //$$ BlockEntity blockEntity = ((EntityBlock) block).newBlockEntity(null);
             //#endif
             if (blockEntity == null) {
                 buf.writeBoolean(false);
                 return;
             }
             //#if MC>=12005
-            writeNbtToBlockEntity(logger, buf.getRegistryManager(), blockEntity);
+            writeNbtToBlockEntity(logger, buf.registryAccess(), blockEntity);
             //#elseif MC>=11802
             //$$ writeNbtToBlockEntity(logger, blockEntity);
             //#else
             //$$ writeNbtToBlockEntity(logger, blockPos, blockEntity);
             //#endif
             //#if MC>=12005
-            NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt(buf.getRegistryManager());
+            CompoundTag updateTag = blockEntity.getUpdateTag(buf.registryAccess());
             //#else
-            //$$ NbtCompound initialChunkDataNbt = blockEntity.toInitialChunkDataNbt();
+            //$$ CompoundTag updateTag = blockEntity.getUpdateTag();
             //#endif
-            if (initialChunkDataNbt == null) {
-                buf.writeBoolean(false);
-                return;
-            }
             buf.writeBoolean(true);
-            buf.writeNbt(initialChunkDataNbt);
+            buf.writeNbt(updateTag);
             return;
         }
         buf.writeBoolean(false);
     }
 
-    public void run(Logger logger, ServerWorld world, BlockPos blockPos, boolean isDestroy, boolean isDropItem) {
-        if (world == null || blockPos == null || blockState == null) {
+    public void run(Logger logger, ServerLevel level, BlockPos blockPos, boolean isDestroy, boolean isDropItem) {
+        if (level == null || blockPos == null || blockState == null) {
             return;
         }
-        BlockState blockStatePre = world.getBlockState(blockPos);
+        BlockState blockStatePre = level.getBlockState(blockPos);
         if (!blockStatePre.isAir()) {
-            if (isDestroy && !(blockState.getBlock() instanceof AbstractFireBlock)) {
+            if (isDestroy && !(blockState.getBlock() instanceof BaseFireBlock)) {
                 //#if MC>=11802
-                world.syncWorldEvent(WorldEvents.BLOCK_BROKEN, blockPos, Block.getRawIdFromState(blockStatePre));
+                level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, blockPos, Block.getId(blockStatePre));
                 //#else
-                //$$ world.syncWorldEvent(2001, blockPos, Block.getRawIdFromState(blockStatePre));
+                //$$ level.levelEvent(2001, blockPos, Block.getId(blockStatePre));
                 //#endif
             }
             if (isDropItem) {
-                Block.dropStacks(blockStatePre, world, blockPos, world.getBlockEntity(blockPos));
+                Block.dropResources(blockStatePre, level, blockPos, level.getBlockEntity(blockPos));
             }
         }
-        if (!world.setBlockState(blockPos, blockState) || nbtCompound == null) {
+        if (!level.setBlockAndUpdate(blockPos, blockState) || compoundTag == null) {
             return;
         }
-        BlockEntity blockEntity = world.getBlockEntity(blockPos);
+        BlockEntity blockEntity = level.getBlockEntity(blockPos);
         if (blockEntity == null) {
             return;
         }
         //#if MC>=12005
-        writeNbtToBlockEntity(logger, world.getRegistryManager(), blockEntity);
+        writeNbtToBlockEntity(logger, level.registryAccess(), blockEntity);
         //#elseif MC>=11802
         //$$ writeNbtToBlockEntity(logger, blockEntity);
         //#else
         //$$ writeNbtToBlockEntity(logger, blockPos, blockEntity);
         //#endif
-        blockEntity.markDirty();
+        blockEntity.setChanged();
     }
 
-    public BlockEntity createBlockEntity(
+    public BlockEntity newBlockEntity(
             Logger logger,
             //#if MC<11802||MC>=12005
-            World world,
+            Level level,
             //#endif
             BlockPos blockPos
     ) {
-        if (blockState.getBlock() instanceof BlockEntityProvider) {
+        if (blockState.getBlock() instanceof EntityBlock) {
             //#if MC>=11802
-            BlockEntity blockEntity = ((BlockEntityProvider) blockState.getBlock()).createBlockEntity(blockPos, blockState);
+            BlockEntity blockEntity = ((EntityBlock) blockState.getBlock()).newBlockEntity(blockPos, blockState);
             //#else
-            //$$ BlockEntity blockEntity = ((BlockEntityProvider) blockState.getBlock()).createBlockEntity(world);
+            //$$ BlockEntity blockEntity = ((EntityBlock) blockState.getBlock()).newBlockEntity(level);
             //#endif
 
             if (blockEntity != null) {
                 //#if MC>=12005
-                writeNbtToBlockEntity(logger, world.getRegistryManager(), blockEntity);
+                writeNbtToBlockEntity(logger, level.registryAccess(), blockEntity);
                 //#elseif MC>=11802
                 //$$ writeNbtToBlockEntity(logger, blockEntity);
                 //#else
@@ -249,27 +256,27 @@ public record DataBlock(BlockState blockState, NbtCompound nbtCompound) {
     public void writeNbtToBlockEntity(
             Logger logger,
             //#if MC>=12005
-            RegistryWrapper.WrapperLookup wrapperLookup,
+            HolderLookup.Provider wrapperLookup,
             //#endif
             //#if MC<11802
             //$$ BlockPos blockPos,
             //#endif
             @NotNull BlockEntity blockEntity
     ) {
-        if (nbtCompound == null) {
+        if (compoundTag == null) {
             return;
         }
         //#if MC>=12106
-        blockEntity.read(NbtReadView.create(new ErrorReporter.Logging(logger), wrapperLookup, nbtCompound));
+        blockEntity.loadWithComponents(TagValueInput.create(new ProblemReporter.ScopedCollector(logger), wrapperLookup, compoundTag));
         //#else
         //$$ try {
         //$$     //#if MC>=12005
-        //$$     blockEntity.read(nbtCompound, wrapperLookup);
+        //$$     blockEntity.loadWithComponents(compoundTag, wrapperLookup);
         //$$     //#elseif MC>=11802
-        //$$     //$$ blockEntity.readNbt(nbtCompound);
+        //$$     //$$ blockEntity.load(compoundTag);
         //$$     //#else
-        //$$     //$$ blockEntity.setLocation(null, blockPos);
-        //$$     //$$ blockEntity.fromTag(blockState, nbtCompound);
+        //$$     //$$ blockEntity.setLevelAndPosition(null, blockPos);
+        //$$     //$$ blockEntity.load(blockState, compoundTag);
         //$$     //#endif
         //$$ } catch (Exception e) {
         //$$     logger.warn("Failed to load block entity", e);

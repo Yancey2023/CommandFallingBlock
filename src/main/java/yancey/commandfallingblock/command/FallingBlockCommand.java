@@ -10,25 +10,29 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.command.argument.*;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.blocks.BlockInput;
+import net.minecraft.commands.arguments.blocks.BlockStateArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.commands.arguments.coordinates.Coordinates;
+import net.minecraft.commands.arguments.coordinates.Vec3Argument;
+import net.minecraft.world.phys.Vec3;
 import yancey.commandfallingblock.util.DataBlock;
 import yancey.commandfallingblock.util.DataFallingBlock;
-import yancey.commandfallingblock.mixin.BlockStateArgumentAccessor;
+import yancey.commandfallingblock.mixin.BlockInputAccessor;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 //#if MC>=12000
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.network.chat.Component;
 //#else
-//$$ import net.minecraft.text.TranslatableText;
+//$$ import net.minecraft.network.chat.TranslatableComponent;
 //#endif
 
 //#if MC>=12111
-import net.minecraft.server.command.CommandManager;
+import net.minecraft.commands.Commands;
 //#endif
 
 public class FallingBlockCommand {
@@ -49,29 +53,29 @@ public class FallingBlockCommand {
     */
 
     //#if MC>=12000
-    private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("command.commandfallingblock.fallingblock.failedToCalculate"));
+    private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("command.commandfallingblock.fallingblock.failedToCalculate"));
     //#else
-    //$$ private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("command.commandfallingblock.fallingblock.failedToCalculate"));
+    //$$ private static final SimpleCommandExceptionType FAILED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableComponent("command.commandfallingblock.fallingblock.failedToCalculate"));
     //#endif
 
     public static void register(
             //#if MC>=12000
-            CommandRegistryAccess commandRegistryAccess,
+            CommandBuildContext commandRegistryAccess,
             //#endif
-            CommandDispatcher<ServerCommandSource> dispatcher) {
+            CommandDispatcher<CommandSourceStack> dispatcher) {
         Executor moveFromPos = FallingBlockCommand::moveFromPos;
         Executor moveFromPosByTick = FallingBlockCommand::moveFromPosByTick;
         Executor moveToPosByTick = FallingBlockCommand::moveToPosByTick;
         Executor moveToPosByYMove = FallingBlockCommand::moveToPosByYMove;
         Executor moveFromPosToPosByMotionY = FallingBlockCommand::moveFromPosToPosByMotionY;
         Executor moveFromPosToPosByTick = FallingBlockCommand::moveFromPosToPosByTick;
-        //#if MC>=12000
         dispatcher.register(literal("fallingblock")
                 //#if MC>=12111
-                .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 //#else
-                //# .requires(source -> source.hasPermissionLevel(2))
+                //# .requires(source -> source.hasPermission(2))
                 //#endif
+                //#if MC>=12000
                 .then(add("moveFromPos", posStart(motion(hasGravity(blockAndAge(commandRegistryAccess, false, moveFromPos))))))
                 .then(add("moveFromBlockPos", blockPosStart(motion(hasGravity(blockAndAge(commandRegistryAccess, true, moveFromPos))))))
                 .then(add("moveFromPosByTick", posStart(motion(hasGravity(tickMove(blockAndAge(commandRegistryAccess, false, moveFromPosByTick)))))))
@@ -84,79 +88,76 @@ public class FallingBlockCommand {
                 .then(add("moveFromBlockPosToBlockPosByMotionY", blockPosStart(blockPosEnd(motionY(blockAndAge(commandRegistryAccess, true, moveFromPosToPosByMotionY))))))
                 .then(add("moveFromPosToPosByTick", posStart(posEnd(hasGravity(tickMove(blockAndAge(commandRegistryAccess, false, moveFromPosToPosByTick)))))))
                 .then(add("moveFromBlockPosToBlockPosByTick", blockPosStart(blockPosEnd(hasGravity(tickMove(blockAndAge(commandRegistryAccess, true, moveFromPosToPosByTick)))))))
+                //#else
+                //$$ .then(add("moveFromPos", posStart(motion(hasGravity(blockAndAge(false, moveFromPos))))))
+                //$$ .then(add("moveFromBlockPos", blockPosStart(motion(hasGravity(blockAndAge(true, moveFromPos))))))
+                //$$ .then(add("moveFromPosByTick", posStart(motion(hasGravity(tickMove(blockAndAge(false, moveFromPosByTick)))))))
+                //$$ .then(add("moveFromPosByTick", blockPosStart(motion(hasGravity(tickMove(blockAndAge( true, moveFromPosByTick)))))))
+                //$$ .then(add("moveToPosByTick", posEnd(motion(hasGravity(tickMove(blockAndAge(false, moveToPosByTick)))))))
+                //$$ .then(add("moveToBlockPosByTick", blockPosEnd(motion(hasGravity(tickMove(blockAndAge( true, moveToPosByTick)))))))
+                //$$ .then(add("moveToPosByYMove", posEnd(motion(yMove(hasGravity(blockAndAge(false, moveToPosByYMove)))))))
+                //$$ .then(add("moveToBlockPosByYMove", blockPosEnd(motion(yMove(hasGravity(blockAndAge(true, moveToPosByYMove)))))))
+                //$$ .then(add("moveFromPosToPosByMotionY", posStart(posEnd(motionY(blockAndAge(false, moveFromPosToPosByMotionY))))))
+                //$$ .then(add("moveFromBlockPosToBlockPosByMotionY", blockPosStart(blockPosEnd(motionY(blockAndAge(true, moveFromPosToPosByMotionY))))))
+                //$$ .then(add("moveFromPosToPosByTick", posStart(posEnd(hasGravity(tickMove(blockAndAge( false, moveFromPosToPosByTick)))))))
+                //$$ .then(add("moveFromBlockPosToBlockPosByTick", blockPosStart(blockPosEnd(hasGravity(tickMove(blockAndAge( true, moveFromPosToPosByTick)))))))
+                //#endif
         );
-        //#else
-        //$$ dispatcher.register(literal("fallingblock")
-        //$$         .requires(source -> source.hasPermissionLevel(2))
-        //$$         .then(add("moveFromPos", posStart(motion(hasGravity(blockAndAge(false, moveFromPos))))))
-        //$$         .then(add("moveFromBlockPos", blockPosStart(motion(hasGravity(blockAndAge(true, moveFromPos))))))
-        //$$         .then(add("moveFromPosByTick", posStart(motion(hasGravity(tickMove(blockAndAge(false, moveFromPosByTick)))))))
-        //$$         .then(add("moveFromPosByTick", blockPosStart(motion(hasGravity(tickMove(blockAndAge( true, moveFromPosByTick)))))))
-        //$$         .then(add("moveToPosByTick", posEnd(motion(hasGravity(tickMove(blockAndAge(false, moveToPosByTick)))))))
-        //$$         .then(add("moveToBlockPosByTick", blockPosEnd(motion(hasGravity(tickMove(blockAndAge( true, moveToPosByTick)))))))
-        //$$         .then(add("moveToPosByYMove", posEnd(motion(yMove(hasGravity(blockAndAge(false, moveToPosByYMove)))))))
-        //$$         .then(add("moveToBlockPosByYMove", blockPosEnd(motion(yMove(hasGravity(blockAndAge(true, moveToPosByYMove)))))))
-        //$$         .then(add("moveFromPosToPosByMotionY", posStart(posEnd(motionY(blockAndAge(false, moveFromPosToPosByMotionY))))))
-        //$$         .then(add("moveFromBlockPosToBlockPosByMotionY", blockPosStart(blockPosEnd(motionY(blockAndAge(true, moveFromPosToPosByMotionY))))))
-        //$$         .then(add("moveFromPosToPosByTick", posStart(posEnd(hasGravity(tickMove(blockAndAge( false, moveFromPosToPosByTick)))))))
-        //$$         .then(add("moveFromBlockPosToBlockPosByTick", blockPosStart(blockPosEnd(hasGravity(tickMove(blockAndAge( true, moveFromPosToPosByTick)))))))
-        //$$ );
-        //#endif
     }
 
-    private static LiteralArgumentBuilder<ServerCommandSource> add(String str, RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
+    private static LiteralArgumentBuilder<CommandSourceStack> add(String str, RequiredArgumentBuilder<CommandSourceStack, ?> argument) {
         return literal(str).then(argument);
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, PosArgument> posStart(RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
-        return argument("start", Vec3ArgumentType.vec3(false)).then(argument);
+    private static RequiredArgumentBuilder<CommandSourceStack, Coordinates> posStart(RequiredArgumentBuilder<CommandSourceStack, ?> argument) {
+        return argument("start", Vec3Argument.vec3(false)).then(argument);
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, PosArgument> posEnd(RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
-        return argument("end", Vec3ArgumentType.vec3(false)).then(argument);
+    private static RequiredArgumentBuilder<CommandSourceStack, Coordinates> posEnd(RequiredArgumentBuilder<CommandSourceStack, ?> argument) {
+        return argument("end", Vec3Argument.vec3(false)).then(argument);
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, PosArgument> blockPosStart(RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
-        return argument("start", BlockPosArgumentType.blockPos()).then(argument);
+    private static RequiredArgumentBuilder<CommandSourceStack, Coordinates> blockPosStart(RequiredArgumentBuilder<CommandSourceStack, ?> argument) {
+        return argument("start", BlockPosArgument.blockPos()).then(argument);
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, PosArgument> blockPosEnd(RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
-        return argument("end", BlockPosArgumentType.blockPos()).then(argument);
+    private static RequiredArgumentBuilder<CommandSourceStack, Coordinates> blockPosEnd(RequiredArgumentBuilder<CommandSourceStack, ?> argument) {
+        return argument("end", BlockPosArgument.blockPos()).then(argument);
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, Double> motionY(RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
+    private static RequiredArgumentBuilder<CommandSourceStack, Double> motionY(RequiredArgumentBuilder<CommandSourceStack, ?> argument) {
         return argument("motionY", DoubleArgumentType.doubleArg()).then(argument);
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, Double> motion(RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
+    private static RequiredArgumentBuilder<CommandSourceStack, Double> motion(RequiredArgumentBuilder<CommandSourceStack, ?> argument) {
         return argument("motionX", DoubleArgumentType.doubleArg()).then(argument("motionY", DoubleArgumentType.doubleArg()).then(argument("motionZ", DoubleArgumentType.doubleArg()).then(argument)));
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, Double> yMove(RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
+    private static RequiredArgumentBuilder<CommandSourceStack, Double> yMove(RequiredArgumentBuilder<CommandSourceStack, ?> argument) {
         return argument("yMove", DoubleArgumentType.doubleArg()).then(argument);
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, Boolean> hasGravity(RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
+    private static RequiredArgumentBuilder<CommandSourceStack, Boolean> hasGravity(RequiredArgumentBuilder<CommandSourceStack, ?> argument) {
         return argument("hasGravity", BoolArgumentType.bool()).then(argument);
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, Integer> tickMove(RequiredArgumentBuilder<ServerCommandSource, ?> argument) {
+    private static RequiredArgumentBuilder<CommandSourceStack, Integer> tickMove(RequiredArgumentBuilder<CommandSourceStack, ?> argument) {
         return argument("tickMove", IntegerArgumentType.integer()).then(argument);
     }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, BlockStateArgument> blockAndAge(
+    private static RequiredArgumentBuilder<CommandSourceStack, BlockInput> blockAndAge(
             //#if MC>=12000
-            CommandRegistryAccess commandRegistryAccess,
+            CommandBuildContext commandRegistryAccess,
             //#endif
             boolean isBlockPos,
             Executor executor
     ) {
         //#if MC>=12000
-        BlockStateArgumentType blockStateArgumentType = BlockStateArgumentType.blockState(commandRegistryAccess);
+        BlockStateArgument blockStateArgument = BlockStateArgument.block(commandRegistryAccess);
         //#else
-        //$$ BlockStateArgumentType blockStateArgumentType = BlockStateArgumentType.blockState();
+        //$$ BlockStateArgument blockStateArgument = BlockStateArgument.block();
         //#endif
-        return argument("block", blockStateArgumentType).executes(context -> {
+        return argument("block", blockStateArgument).executes(context -> {
             checkAndRun(context, executor.execute(context, isBlockPos, false));
             return Command.SINGLE_SUCCESS;
         }).then(argument("age", IntegerArgumentType.integer(-1)).executes(context -> {
@@ -165,81 +166,81 @@ public class FallingBlockCommand {
         }));
     }
 
-    private static void checkAndRun(CommandContext<ServerCommandSource> context, DataFallingBlock dataFallingBlock) throws CommandSyntaxException {
+    private static void checkAndRun(CommandContext<CommandSourceStack> context, DataFallingBlock dataFallingBlock) throws CommandSyntaxException {
         if (dataFallingBlock == null) {
             throw FAILED_EXCEPTION.create();
         } else {
-            dataFallingBlock.run(context.getSource().getWorld());
+            dataFallingBlock.run(context.getSource().getLevel());
         }
     }
 
-    private static DataBlock getDataBlock(CommandContext<ServerCommandSource> context) {
-        BlockStateArgument blockStateArgument = BlockStateArgumentType.getBlockState(context, "block");
-        return new DataBlock(blockStateArgument.getBlockState(), ((BlockStateArgumentAccessor) blockStateArgument).getData());
+    private static DataBlock getDataBlock(CommandContext<CommandSourceStack> context) {
+        BlockInput blockStateArgument = BlockStateArgument.getBlock(context, "block");
+        return new DataBlock(blockStateArgument.getState(), ((BlockInputAccessor) blockStateArgument).getTag());
     }
 
-    private static Vec3d getStart(CommandContext<ServerCommandSource> context, boolean isBlockPos) throws CommandSyntaxException {
-        return isBlockPos ? Vec3d.ofBottomCenter(BlockPosArgumentType.getLoadedBlockPos(context, "start")) : Vec3ArgumentType.getVec3(context, "start");
+    private static Vec3 getStart(CommandContext<CommandSourceStack> context, boolean isBlockPos) throws CommandSyntaxException {
+        return isBlockPos ? Vec3.atBottomCenterOf(BlockPosArgument.getLoadedBlockPos(context, "start")) : Vec3Argument.getVec3(context, "start");
     }
 
-    private static Vec3d getEnd(CommandContext<ServerCommandSource> context, boolean isBlockPos) throws CommandSyntaxException {
-        return isBlockPos ? Vec3d.ofBottomCenter(BlockPosArgumentType.getLoadedBlockPos(context, "end")) : Vec3ArgumentType.getVec3(context, "end");
+    private static Vec3 getEnd(CommandContext<CommandSourceStack> context, boolean isBlockPos) throws CommandSyntaxException {
+        return isBlockPos ? Vec3.atBottomCenterOf(BlockPosArgument.getLoadedBlockPos(context, "end")) : Vec3Argument.getVec3(context, "end");
     }
 
-    private static Vec3d getMotion(CommandContext<ServerCommandSource> context) {
-        return new Vec3d(
+    private static Vec3 getMotion(CommandContext<CommandSourceStack> context) {
+        return new Vec3(
                 DoubleArgumentType.getDouble(context, "motionX"),
                 getMotionY(context),
                 DoubleArgumentType.getDouble(context, "motionZ")
         );
     }
 
-    private static double getMotionY(CommandContext<ServerCommandSource> context) {
+    private static double getMotionY(CommandContext<CommandSourceStack> context) {
         return DoubleArgumentType.getDouble(context, "motionY");
     }
 
-    private static boolean getHasGravity(CommandContext<ServerCommandSource> context) {
+    private static boolean getHasGravity(CommandContext<CommandSourceStack> context) {
         return BoolArgumentType.getBool(context, "hasGravity");
     }
 
-    private static double getYMove(CommandContext<ServerCommandSource> context) {
+    private static double getYMove(CommandContext<CommandSourceStack> context) {
         return DoubleArgumentType.getDouble(context, "yMove");
     }
 
-    private static int getTickMove(CommandContext<ServerCommandSource> context) {
+    private static int getTickMove(CommandContext<CommandSourceStack> context) {
         return IntegerArgumentType.getInteger(context, "tickMove");
     }
 
-    private static int getAge(CommandContext<ServerCommandSource> context, boolean hasAge) {
+    private static int getAge(CommandContext<CommandSourceStack> context, boolean hasAge) {
         return hasAge ? IntegerArgumentType.getInteger(context, "age") : -1;
     }
 
-    private static DataFallingBlock moveFromPos(CommandContext<ServerCommandSource> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
+    private static DataFallingBlock moveFromPos(CommandContext<CommandSourceStack> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
         return DataFallingBlock.moveFromPos(getDataBlock(context), getStart(context, isBlockPos), getMotion(context), getHasGravity(context), getAge(context, hasAge));
     }
 
-    private static DataFallingBlock moveFromPosByTick(CommandContext<ServerCommandSource> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
+    private static DataFallingBlock moveFromPosByTick(CommandContext<CommandSourceStack> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
         return DataFallingBlock.moveFromPosByTick(getDataBlock(context), getStart(context, isBlockPos), getMotion(context), getHasGravity(context), getTickMove(context), getAge(context, hasAge));
     }
 
-    private static DataFallingBlock moveToPosByTick(CommandContext<ServerCommandSource> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
+    private static DataFallingBlock moveToPosByTick(CommandContext<CommandSourceStack> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
         return DataFallingBlock.moveToPosByTick(getDataBlock(context), getEnd(context, isBlockPos), getMotion(context), getHasGravity(context), getTickMove(context), getAge(context, hasAge));
     }
 
-    private static DataFallingBlock moveToPosByYMove(CommandContext<ServerCommandSource> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
+    private static DataFallingBlock moveToPosByYMove(CommandContext<CommandSourceStack> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
         return DataFallingBlock.moveToPosByYMove(getDataBlock(context), getEnd(context, isBlockPos), getMotion(context), getHasGravity(context), getYMove(context), getAge(context, hasAge));
     }
 
-    private static DataFallingBlock moveFromPosToPosByTick(CommandContext<ServerCommandSource> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
+    private static DataFallingBlock moveFromPosToPosByTick(CommandContext<CommandSourceStack> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
         return DataFallingBlock.moveFromPosToPosByTick(getDataBlock(context), getStart(context, isBlockPos), getEnd(context, isBlockPos), getHasGravity(context), getTickMove(context), getAge(context, hasAge));
     }
 
-    private static DataFallingBlock moveFromPosToPosByMotionY(CommandContext<ServerCommandSource> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
+    private static DataFallingBlock moveFromPosToPosByMotionY(CommandContext<CommandSourceStack> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException {
         return DataFallingBlock.moveFromPosToPosByMotionY(getDataBlock(context), getStart(context, isBlockPos), getEnd(context, isBlockPos), getMotionY(context), getAge(context, hasAge));
     }
 
     private interface Executor {
-        DataFallingBlock execute(CommandContext<ServerCommandSource> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException;
+        DataFallingBlock execute(CommandContext<CommandSourceStack> context, boolean isBlockPos, boolean hasAge) throws CommandSyntaxException;
     }
 
 }

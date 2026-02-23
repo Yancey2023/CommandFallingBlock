@@ -1,61 +1,64 @@
 package yancey.commandfallingblock.network;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import java.util.UUID;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import yancey.commandfallingblock.util.DataBlock;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
-import java.util.UUID;
-
-//#if MC>=12000&&MC<12005
-//$$ import java.util.Objects;
-//#endif
-
 //#if MC>=12005
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //#endif
 
 import static yancey.commandfallingblock.CommandFallingBlock.MOD_ID;
 
+//#if MC>=12111
+import org.jspecify.annotations.NonNull;
+//#elseif MC>=12005
+//$$ import org.jetbrains.annotations.NotNull;
+//#endif
+
 //#if MC>=11802
-public record SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3d pos, Vec3d velocity, DataBlock dataBlock,
+public record SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3 pos, Vec3 velocity, DataBlock dataBlock,
                                            boolean hasNoGravity, int tickMove, BlockPos blockPosEnd)
 //#else
 //$$ public class SummonFallingBlockPayloadS2C
 //#endif
         //#if MC>=12005
-        implements CustomPayload
+        implements CustomPacketPayload
         //#endif
 {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
     //#if MC>=12005
-    public static final Id<SummonFallingBlockPayloadS2C> ID = new Id<>(Identifier.of(MOD_ID, "summon_falling_block"));
-    public static final PacketCodec<RegistryByteBuf, SummonFallingBlockPayloadS2C> CODEC
-            = PacketCodec.of(SummonFallingBlockPayloadS2C::encode, SummonFallingBlockPayloadS2C::decode);
-    //#elseif MC>=12000
-    //$$ public static final Identifier ID = Objects.requireNonNull(Identifier.of(MOD_ID, "summon_falling_block"));
+    //#if MC>=12100
+    public static final Type<SummonFallingBlockPayloadS2C> ID = new Type<>(Identifier.fromNamespaceAndPath(MOD_ID, "summon_falling_block"));
     //#else
-    //$$ public static final Identifier ID = new Identifier(MOD_ID, "summon_falling_block");
+    //$$ public static final Type<SummonFallingBlockPayloadS2C> ID = new Type<>(new ResourceLocation(MOD_ID, "summon_falling_block"));
+    //#endif
+    public static final StreamCodec<RegistryFriendlyByteBuf, SummonFallingBlockPayloadS2C> CODEC
+            = StreamCodec.ofMember(SummonFallingBlockPayloadS2C::encode, SummonFallingBlockPayloadS2C::decode);
+    //#else
+    //$$ public static final ResourceLocation ID = new ResourceLocation(MOD_ID, "summon_falling_block");
     //#endif
 
     //#if MC<11802
-    //$$ public final int id;
-    //$$ public final UUID uuid;
-    //$$ public final Vec3d pos, velocity;
-    //$$ public final DataBlock dataBlock;
-    //$$ public final boolean hasNoGravity;
-    //$$ public final int tickMove;
-    //$$ public final BlockPos blockPosEnd;
+    //$$ private final int id;
+    //$$ private final UUID uuid;
+    //$$ private final Vec3 pos, velocity;
+    //$$ private final DataBlock dataBlock;
+    //$$ private final boolean hasNoGravity;
+    //$$ private final int tickMove;
+    //$$ private final BlockPos blockPosEnd;
     //$$
-    //$$ public SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3d pos, Vec3d velocity, DataBlock dataBlock, boolean hasNoGravity, int tickMove, BlockPos blockPosEnd) {
+    //$$ public SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3 pos, Vec3 velocity, DataBlock dataBlock, boolean hasNoGravity, int tickMove, BlockPos blockPosEnd) {
     //$$     this.id = id;
     //$$     this.uuid = uuid;
     //$$     this.pos = pos;
@@ -74,11 +77,11 @@ public record SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3d pos, Vec3d v
     //$$     return uuid;
     //$$ }
     //$$
-    //$$ public Vec3d pos() {
+    //$$ public Vec3 pos() {
     //$$     return pos;
     //$$ }
     //$$
-    //$$ public Vec3d velocity() {
+    //$$ public Vec3 velocity() {
     //$$     return velocity;
     //$$ }
     //$$
@@ -100,25 +103,31 @@ public record SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3d pos, Vec3d v
     //#endif
 
     public SummonFallingBlockPayloadS2C(EntityBetterFallingBlock entity) {
-        this(entity.getId(), entity.getUuid(), entity.getEntityPos(), entity.getVelocity(), entity.dataBlock, entity.hasNoGravity(), entity.tickMove, entity.blockPosEnd);
+        this(entity.getId(), entity.getUUID(), entity.position(), entity.getDeltaMovement(), entity.dataBlock, entity.isNoGravity(), entity.tickMove, entity.blockPosEnd);
     }
 
     //#if MC>=12005
     @Override
-    public Id<SummonFallingBlockPayloadS2C> getId() {
+    public
+    //#if MC>=12111
+    @NonNull
+    //#else
+    //$$ @NotNull
+    //#endif
+    Type<SummonFallingBlockPayloadS2C> type() {
         return ID;
     }
     //#endif
 
     public void encode(
             //#if MC>=12005
-            RegistryByteBuf buf
+            RegistryFriendlyByteBuf buf
             //#else
-            //$$ PacketByteBuf buf
+            //$$ FriendlyByteBuf buf
             //#endif
     ) {
         buf.writeInt(id);
-        buf.writeUuid(uuid);
+        buf.writeUUID(uuid);
         buf.writeDouble(pos.x);
         buf.writeDouble(pos.y);
         buf.writeDouble(pos.z);
@@ -133,11 +142,11 @@ public record SummonFallingBlockPayloadS2C(int id, UUID uuid, Vec3d pos, Vec3d v
         }
     }
 
-    public static SummonFallingBlockPayloadS2C decode(PacketByteBuf buf) {
+    public static SummonFallingBlockPayloadS2C decode(FriendlyByteBuf buf) {
         int id = buf.readInt();
-        UUID uuid = buf.readUuid();
-        Vec3d pos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
-        Vec3d velocity = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+        UUID uuid = buf.readUUID();
+        Vec3 pos = new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble());
+        Vec3 velocity = new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble());
         DataBlock dataBlock = DataBlock.createByClientRenderData(buf);
         boolean hasNoGravity = buf.readBoolean();
         int tickMove = buf.readInt();

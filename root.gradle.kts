@@ -31,8 +31,8 @@ preprocess {
     val fabric12107 = createNode("1.21.7-fabric", 12107, "yarn")
     val fabric12108 = createNode("1.21.8-fabric", 12108, "yarn")
     val fabric12109 = createNode("1.21.9-fabric", 12109, "yarn")
-    val fabric12110 = createNode("1.21.10-fabric", 12110, "yarn")
-    val fabric12111 = createNode("1.21.11-fabric", 12111, "yarn")
+    val fabric12110 = createNode("1.21.10-fabric", 12110, "official")
+    val fabric12111 = createNode("1.21.11-fabric", 12111, "official")
 
     // And then you need to tell the preprocessor which versions it should directly convert between.
     // This should form a directed graph with no cycles (i.e. a tree), which the preprocessor will then traverse to
@@ -44,7 +44,7 @@ preprocess {
     // an intermediary 1.16.2 forge project which has something in common with both.
     fabric12111.link(fabric12110)
     fabric12110.link(fabric12109)
-    fabric12109.link(fabric12108, file("versions/mapping-1.21.9-1.21.8.txt"))
+    fabric12109.link(fabric12108)
     fabric12108.link(fabric12107)
     fabric12107.link(fabric12106)
     fabric12106.link(fabric12105)

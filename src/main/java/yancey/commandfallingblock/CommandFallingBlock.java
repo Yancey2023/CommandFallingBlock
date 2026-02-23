@@ -1,16 +1,15 @@
 package yancey.commandfallingblock;
 
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.core.Registry;
 import yancey.commandfallingblock.command.FallingBlockCommand;
 import yancey.commandfallingblock.entity.EntityBetterFallingBlock;
 
 //#if MC>=12000
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 //#else
 //$$ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-//$$ import net.minecraft.util.registry.Registry;
 //#endif
 
 //#if MC>=12005
@@ -26,7 +25,7 @@ public class CommandFallingBlock implements ModInitializer {
     public void onInitialize() {
         Registry.register(
                 //#if MC>=12000
-                Registries.ENTITY_TYPE,
+                BuiltInRegistries.ENTITY_TYPE,
                 //#else
                 //$$ Registry.ENTITY_TYPE,
                 //#endif

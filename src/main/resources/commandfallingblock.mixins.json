@@ -4,8 +4,8 @@
   "package": "yancey.commandfallingblock.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "BlockStateArgumentAccessor",
-    "EntityTrackerEntryMixin",
+    "BlockInputAccessor",
+    "ServerEntityMixin",
     "FallingBlockEntityAccessor"
   ],
   "client": [
