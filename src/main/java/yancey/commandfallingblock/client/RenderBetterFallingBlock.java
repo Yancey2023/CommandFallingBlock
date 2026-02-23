@@ -328,7 +328,7 @@ public class RenderBetterFallingBlock
         //#endif
         public BlockEntity blockEntity;
         //#if MC>=12109
-        public MovingBlockRenderState movingBlockRenderState = new MovingBlockRenderState();
+        public final MovingBlockRenderState movingBlockRenderState = new MovingBlockRenderState();
         //#else
         //$$ public BlockPos fallingBlockPos;
         //$$ public BlockPos entityBlockPos;
