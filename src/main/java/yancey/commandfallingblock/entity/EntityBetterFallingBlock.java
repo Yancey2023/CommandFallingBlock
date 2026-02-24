@@ -523,6 +523,12 @@ public class EntityBetterFallingBlock extends Entity {
     //$$ }
     //#endif
 
+    //#if MC<11802
+    //$$ @Override
+    //$$ public void lerpTo(double d, double e, double f, float g, float h, int i, boolean bl) {
+    //$$ }
+    //#endif
+
     public void onSpawnPacket(SummonFallingBlockPayloadS2C payload) {
         //#if MC>=12000
         getPositionCodec().setBase(payload.pos());

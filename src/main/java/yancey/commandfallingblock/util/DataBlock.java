@@ -18,6 +18,8 @@ import net.minecraft.world.level.Level;
 
 //#if MC>=11802
 import net.minecraft.world.level.block.LevelEvent;
+//#else
+//$$ import yancey.commandfallingblock.mixin.BlockEntityAccessor;
 //#endif
 
 //#if MC>=12000&&MC<12106
@@ -275,6 +277,7 @@ public record DataBlock(BlockState blockState, CompoundTag compoundTag) {
         //$$     //#elseif MC>=11802
         //$$     //$$ blockEntity.load(compoundTag);
         //$$     //#else
+        //$$     //$$ ((BlockEntityAccessor) blockEntity).setBlockState(blockState);
         //$$     //$$ blockEntity.setLevelAndPosition(null, blockPos);
         //$$     //$$ blockEntity.load(blockState, compoundTag);
         //$$     //#endif

@@ -197,7 +197,7 @@ public class RenderBetterFallingBlock
             //#elseif MC>=11802
             //$$ blockEntity.setLevel(level);
             //#else
-            //$$ entity.blockEntity.setLevelAndPosition(level, entity.getFallingBlockPos());
+            //$$ blockEntity.setLevelAndPosition(level, entity.getFallingBlockPos());
             //#endif
 
             //#if MC>=12109
