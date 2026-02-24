@@ -3,25 +3,10 @@ import requests
 import xml.etree.ElementTree as ET
 
 versions = [name for name in os.listdir("./versions") if os.path.isdir(os.path.join("./versions", name))]
-yarn_versions = requests.get("https://meta.fabricmc.net/v2/versions/yarn").json()
 loader_versions = requests.get("https://meta.fabricmc.net/v2/versions/loader").json()
 fabric_api_versions = [node.text for node in ET.fromstring(
     requests.get("https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml").content).findall(
     ".//versions/version")]
-
-for version in versions:
-    game_version = version.split("-")[0]
-    best_yarn_version: dict | None = None
-    for yarn_version in yarn_versions:
-        if game_version == yarn_version["gameVersion"]:
-            if best_yarn_version is None or yarn_version["build"] > best_yarn_version["build"]:
-                best_yarn_version = yarn_version
-    if best_yarn_version is None:
-        print(f"{version} -> None")
-        continue
-    print(f"{version} -> {best_yarn_version['maven']}:v2")
-    with open(f"./versions/{version}/gradle.properties", "w", encoding="utf-8") as f:
-        f.write(f"essential.defaults.loom.mappings={best_yarn_version['maven']}:v2")
 
 best_loader_version = loader_versions[0]
 content = ""
