@@ -35,6 +35,8 @@ tasks.named("build") {
 }
 
 preprocess {
+    strictExtraMappings = true
+
     // Here you first need to create a node per version you support and assign it an integer Minecraft version.
     // The mappings value is currently meaningless.
     val fabric11605 = createNode("1.16.5-fabric", 11605, "official")

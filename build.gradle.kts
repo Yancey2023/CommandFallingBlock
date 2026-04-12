@@ -40,5 +40,11 @@ val fabricApiVersion = when (mcVersion) {
 }
 
 dependencies {
-    implementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
+    if (platform.isFabric) {
+        if (mcVersion >= 26_01_00) {
+            implementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
+        } else {
+            "modImplementation"("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
+        }
+    }
 }
