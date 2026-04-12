@@ -33,8 +33,10 @@ public class CommandFallingBlock implements ModInitializer {
                 EntityBetterFallingBlock.BETTER_FALLING_BLOCK
         );
 
-        //#if MC>=12005
-        PayloadTypeRegistry.playS2C().register(SummonFallingBlockPayloadS2C.ID, SummonFallingBlockPayloadS2C.CODEC);
+        //#if MC>=26.1
+        PayloadTypeRegistry.clientboundPlay().register(SummonFallingBlockPayloadS2C.ID, SummonFallingBlockPayloadS2C.CODEC);
+        //#elseif MC>=12005
+        //$$ PayloadTypeRegistry.playS2C().register(SummonFallingBlockPayloadS2C.ID, SummonFallingBlockPayloadS2C.CODEC);
         //#endif
 
         //#if MC>=12000

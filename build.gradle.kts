@@ -10,10 +10,12 @@ plugins {
     // Minecraft, fabric-loader, forge, mappings, etc. versions.
     // You can also overwrite some of these if need be. See the `gg.essential.defaults.loom` README section.
     // Otherwise you'll need to configure those as usual for (architectury) loom.
-    id("gg.essential.defaults")
+    id("gg.essential.defaults") apply false
 }
 
 val mcVersion = platform.mcVersion
+extra["essential.defaults.loom.mappings"] = if (mcVersion >= 26_01_00) "" else "official"
+apply(plugin = "gg.essential.defaults")
 
 version = "${project.name}-${rootProject.version}"
 base.archivesName.set("commandfallingblock")
@@ -30,7 +32,7 @@ val fabricApiVersion = when (mcVersion) {
     12005 -> "0.97.8+1.20.5"
     12006 -> "0.100.8+1.20.6"
     12100 -> "0.102.0+1.21"
-    12101 -> "0.116.8+1.21.1"
+    12101 -> "0.116.10+1.21.1"
     12102 -> "0.106.1+1.21.2"
     12103 -> "0.114.1+1.21.3"
     12104 -> "0.119.4+1.21.4"
@@ -41,6 +43,7 @@ val fabricApiVersion = when (mcVersion) {
     12109 -> "0.134.1+1.21.9"
     12110 -> "0.138.4+1.21.10"
     12111 -> "0.141.3+1.21.11"
+    26_01_00 -> "0.145.1+26.1"
     else -> throw UnsupportedOperationException()
 }
 
@@ -79,7 +82,7 @@ dependencies {
 
         for (module in fabricApiModules) {
             val dep = fabricApi.module(module, fabricApiVersion)
-            modImplementation(dep)
+            "modImplementation"(dep)
         }
     }
 }
