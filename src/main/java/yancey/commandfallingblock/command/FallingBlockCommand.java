@@ -92,15 +92,15 @@ public class FallingBlockCommand {
                 //$$ .then(add("moveFromPos", posStart(motion(hasGravity(blockAndAge(false, moveFromPos))))))
                 //$$ .then(add("moveFromBlockPos", blockPosStart(motion(hasGravity(blockAndAge(true, moveFromPos))))))
                 //$$ .then(add("moveFromPosByTick", posStart(motion(hasGravity(tickMove(blockAndAge(false, moveFromPosByTick)))))))
-                //$$ .then(add("moveFromBlockPosByTick", blockPosStart(motion(hasGravity(tickMove(blockAndAge( true, moveFromPosByTick)))))))
+                //$$ .then(add("moveFromBlockPosByTick", blockPosStart(motion(hasGravity(tickMove(blockAndAge(true, moveFromPosByTick)))))))
                 //$$ .then(add("moveToPosByTick", posEnd(motion(hasGravity(tickMove(blockAndAge(false, moveToPosByTick)))))))
-                //$$ .then(add("moveToBlockPosByTick", blockPosEnd(motion(hasGravity(tickMove(blockAndAge( true, moveToPosByTick)))))))
+                //$$ .then(add("moveToBlockPosByTick", blockPosEnd(motion(hasGravity(tickMove(blockAndAge(true, moveToPosByTick)))))))
                 //$$ .then(add("moveToPosByYMove", posEnd(motion(yMove(hasGravity(blockAndAge(false, moveToPosByYMove)))))))
                 //$$ .then(add("moveToBlockPosByYMove", blockPosEnd(motion(yMove(hasGravity(blockAndAge(true, moveToPosByYMove)))))))
                 //$$ .then(add("moveFromPosToPosByMotionY", posStart(posEnd(motionY(blockAndAge(false, moveFromPosToPosByMotionY))))))
                 //$$ .then(add("moveFromBlockPosToBlockPosByMotionY", blockPosStart(blockPosEnd(motionY(blockAndAge(true, moveFromPosToPosByMotionY))))))
-                //$$ .then(add("moveFromPosToPosByTick", posStart(posEnd(hasGravity(tickMove(blockAndAge( false, moveFromPosToPosByTick)))))))
-                //$$ .then(add("moveFromBlockPosToBlockPosByTick", blockPosStart(blockPosEnd(hasGravity(tickMove(blockAndAge( true, moveFromPosToPosByTick)))))))
+                //$$ .then(add("moveFromPosToPosByTick", posStart(posEnd(hasGravity(tickMove(blockAndAge(false, moveFromPosToPosByTick)))))))
+                //$$ .then(add("moveFromBlockPosToBlockPosByTick", blockPosStart(blockPosEnd(hasGravity(tickMove(blockAndAge(true, moveFromPosToPosByTick)))))))
                 //#endif
         );
     }
