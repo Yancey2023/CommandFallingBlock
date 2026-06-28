@@ -10,7 +10,7 @@ pluginManagement {
     // We also recommend specifying your desired version here if you're using more than one of the plugins,
     // so you do not have to change the version in multilpe places when updating.
     plugins {
-        val egtVersion = "0.7.0-alpha.5" // should be whatever is displayed in above badge
+        val egtVersion = "0.7.2" // should be whatever is displayed in above badge
         id("gg.essential.multi-version.root") version egtVersion
         id("gg.essential.multi-version.api-validation") version egtVersion
     }
@@ -41,6 +41,7 @@ listOf(
     "26.1-fabric",
     "26.1.1-fabric",
     "26.1.2-fabric",
+    "26.2-fabric",
 ).forEach { version ->
     include(":$version")
     project(":$version").apply {

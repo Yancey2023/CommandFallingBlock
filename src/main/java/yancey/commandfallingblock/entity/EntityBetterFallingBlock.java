@@ -90,6 +90,10 @@ import org.jspecify.annotations.NonNull;
 //$$ import org.jetbrains.annotations.NotNull;
 //#endif
 
+//#if MC>=26.2
+import net.minecraft.world.entity.EntityTypes;
+//#endif
+
 public class EntityBetterFallingBlock extends Entity {
 
     //#if MC>=12100
@@ -311,7 +315,11 @@ public class EntityBetterFallingBlock extends Entity {
         //#if MC>=11802
         Level level = level();
         //#endif
-        FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, level);
+        //#if MC>=26.2
+        FallingBlockEntity entity = new FallingBlockEntity(EntityTypes.FALLING_BLOCK, level);
+        //#else
+        //$$ FallingBlockEntity entity = new FallingBlockEntity(EntityType.FALLING_BLOCK, level);
+        //#endif
         ((FallingBlockEntityAccessor) entity).setBlockState(dataBlock.blockState());
         //#if MC>=11802
         entity.setPos(position());

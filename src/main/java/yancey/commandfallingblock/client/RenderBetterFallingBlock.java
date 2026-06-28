@@ -244,8 +244,10 @@ public class RenderBetterFallingBlock
         if (!isBlockEntityRenderer) {
             poseStack.pushPose();
             poseStack.translate(-0.5, 0.0, -0.5);
-            //#if MC>=12109
-            submitNodeCollector.submitMovingBlock(poseStack, state.movingBlockRenderState);
+            //#if MC>=26.2
+            submitNodeCollector.submitMovingBlock(poseStack, state.movingBlockRenderState, state.outlineColor);
+            //#elseif MC>=12109
+            //$$ submitNodeCollector.submitMovingBlock(poseStack, state.movingBlockRenderState);
             //#else
             //$$ //#if MC<12000
             //$$ //$$ BlockRenderDispatcher blockRenderDispatcher = Minecraft.getInstance().getBlockRenderer();
